@@ -1,36 +1,87 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Madrid Party Calendar
 
-## Getting Started
+A lightweight, mobile-first calendar aggregating Madrid nightlife events from
+multiple sources — club nights, pubcrawls, pool parties — in one clean app.
 
-First, run the development server:
+- **Web app**: Next.js (App Router) + Tailwind CSS + shadcn/ui + motion, deployed on **Vercel**
+- **Database**: **Supabase** (Postgres, public read via RLS)
+- **Crawlers**: local Node scripts (HTTP-only, no headless browser) that push events into Supabase
+
+## Current sources
+
+| Source | Page | How it's crawled |
+|---|---|---|
+| Nightlife Madrid | <https://tickets.nightlifemadrid.com/en> | PATT backend API (list + ticket tiers per event) |
+| First Circle | <https://events.patt.club/crew/FirstCircle> | Same PATT backend, promoter `FirstCircle` |
+| Erasmus Madrid | <https://erasmusmadrid.org/events/> | The Events Calendar REST API + event pages for ticket tiers |
+
+Each event stores: date, start/end time, early-bird & normal price (VIP/table
+tiers filtered out), ticket URL, genres, venue + Google Maps link, description
+and image. Madrid-only.
+
+## Setup
+
+```bash
+npm install
+cp .env.example .env.local   # then fill in your Supabase credentials
+```
+
+### 1. Create the Supabase table
+
+Create a project at [supabase.com](https://supabase.com), open the SQL editor
+and run [`supabase/schema.sql`](supabase/schema.sql).
+
+### 2. Configure environment
+
+In Supabase → *Project settings → API* copy the values into `.env.local`:
+
+```bash
+NEXT_PUBLIC_SUPABASE_URL=https://YOUR-PROJECT.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=YOUR-ANON-KEY      # web app (read-only via RLS)
+SUPABASE_SERVICE_ROLE_KEY=YOUR-SERVICE-ROLE-KEY  # crawlers only — never commit/deploy
+```
+
+### 3. Crawl
+
+```bash
+npm run crawl                 # all sources → upsert into Supabase
+npm run crawl -- --dry        # preview without writing
+npm run crawl -- --site=patt  # only matching sources
+npm run crawl -- --prune      # also remove past events
+```
+
+Run the crawler regularly (daily is plenty) — recurring event series publish
+their next occurrence one week at a time. See
+[`docs/CRAWLER_GUIDE.md`](docs/CRAWLER_GUIDE.md) for how to add new sources.
+
+### 4. Run the app
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Without Supabase credentials the app renders the bundled demo snapshot
+(`src/lib/sample-events.json`, regenerate with
+`npx tsx crawlers/dump-sample.ts`). A small “demo data” hint appears in the
+header while that fallback is active.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Deploy to Vercel
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm i -g vercel && vercel
+```
 
-## Learn More
+Set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` in the
+Vercel project env vars. **Do not** add the service-role key — crawlers stay
+local by design. The page revalidates every 5 minutes.
 
-To learn more about Next.js, take a look at the following resources:
+## Project structure
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+src/app/            Next.js app router (page, layout, manifest)
+src/components/     calendar view, day strip, event card/sheet, filters
+src/lib/            event types/helpers, supabase client, demo snapshot
+crawlers/           local crawler CLI (sites/, lib/, run.ts) — see docs/CRAWLER_GUIDE.md
+supabase/schema.sql events table + RLS policies
+docs/               crawler guide
+```
