@@ -11,12 +11,18 @@ export function getSupabaseAdmin(): SupabaseClient {
   if (client) return client;
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key || /YOUR-/.test(url) || /YOUR-/.test(key)) {
+  const problems: string[] = [];
+  if (!url || /YOUR-/.test(url)) problems.push("NEXT_PUBLIC_SUPABASE_URL");
+  if (!key || /YOUR-/.test(key)) problems.push("SUPABASE_SERVICE_ROLE_KEY");
+  if (problems.length > 0) {
     throw new Error(
-      "Missing Supabase credentials. Set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in .env.local",
+      `${problems.join(" and ")} ${problems.length > 1 ? "are" : "is"} not set (or still the placeholder) in .env.local.\n` +
+        "Find both in Supabase → Project Settings → API (the service_role key is the secret one).\n" +
+        "Note: the crawler needs the service_role key, not the anon key.",
     );
   }
-  client = createClient(url, key, { auth: { persistSession: false } });
+  // url/key are guaranteed real values here — placeholders threw above.
+  client = createClient(url!, key!, { auth: { persistSession: false } });
   return client;
 }
 

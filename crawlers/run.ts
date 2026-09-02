@@ -6,16 +6,33 @@
  *   npm run crawl -- --site=patt       # filter by site id (substring match)
  *   npm run crawl -- --prune           # also delete past events of crawled sources
  */
-import { config as loadEnv } from "dotenv";
+import { existsSync, readFileSync } from "node:fs";
+import { parse } from "dotenv";
 import { erasmusMadrid } from "./sites/erasmusmadrid";
 import { nightlifeMadrid, pattFirstCircle } from "./sites/patt";
 import { finalizeEvents } from "./lib/finalize";
 import { prunePastEvents, upsertEvents } from "./lib/store";
 import type { SiteCrawler } from "./lib/types";
 
-// .env.local wins; .env is the fallback (dotenv keeps already-set vars).
-loadEnv({ path: ".env.local", quiet: true });
-loadEnv({ path: ".env", quiet: true });
+/**
+ * Load .env.local (wins) then .env, without letting a placeholder value
+ * shadow a real one from the other file. Never overrides real process env.
+ */
+function loadEnvFiles(paths: string[]): void {
+  const merged: Record<string, string> = {};
+  for (const path of paths) {
+    if (!existsSync(path)) continue;
+    for (const [key, value] of Object.entries(parse(readFileSync(path)))) {
+      const isPlaceholder = /YOUR-/.test(value);
+      if (!isPlaceholder || !(key in merged)) merged[key] = value;
+    }
+  }
+  for (const [key, value] of Object.entries(merged)) {
+    if (process.env[key] === undefined) process.env[key] = value;
+  }
+}
+
+loadEnvFiles([".env", ".env.local"]);
 
 const CRAWLERS: SiteCrawler[] = [nightlifeMadrid, pattFirstCircle, erasmusMadrid];
 
