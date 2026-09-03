@@ -10,6 +10,8 @@ import { existsSync, readFileSync } from "node:fs";
 import { parse } from "dotenv";
 import { erasmusMadrid } from "./sites/erasmusmadrid";
 import { nightlifeMadrid, pattFirstCircle } from "./sites/patt";
+import { esnUpm } from "./sites/eventupp";
+import { whan } from "./sites/whan";
 import { finalizeEvents } from "./lib/finalize";
 import { prunePastEvents, upsertEvents } from "./lib/store";
 import type { SiteCrawler } from "./lib/types";
@@ -34,7 +36,7 @@ function loadEnvFiles(paths: string[]): void {
 
 loadEnvFiles([".env", ".env.local"]);
 
-const CRAWLERS: SiteCrawler[] = [nightlifeMadrid, pattFirstCircle, erasmusMadrid];
+const CRAWLERS: SiteCrawler[] = [nightlifeMadrid, pattFirstCircle, erasmusMadrid, esnUpm, whan];
 
 function parseArgs(argv: string[]) {
   const args: { site?: string; dry: boolean; prune: boolean } = { dry: false, prune: false };
@@ -52,9 +54,14 @@ function preview(events: Awaited<ReturnType<SiteCrawler["run"]>>) {
     const price = [e.priceEarly, e.priceNormal].some((p) => p != null)
       ? `${e.priceEarly ?? "?"}–${e.priceNormal ?? "?"} €`
       : "n/a";
+    const sale = e.ticketsSaleAt
+      ? `  sales-open: ${e.ticketsSaleAt.slice(0, 16).replace("T", " ")}`
+      : e.ticketsSaleNote
+        ? `  sales-open: "${e.ticketsSaleNote}"`
+        : "";
     console.log(
       `  ${date}  ${price.padEnd(11)} ${(e.venueName ?? "?").padEnd(22)} ${e.title.slice(0, 58)}` +
-        `\n            genres: [${e.genres.join(", ")}]  url: ${e.url}`,
+        `\n            genres: [${e.genres.join(", ")}]${sale}  url: ${e.url}`,
     );
   }
 }

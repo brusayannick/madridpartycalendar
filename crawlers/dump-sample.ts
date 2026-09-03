@@ -8,6 +8,8 @@ import { writeFileSync } from "node:fs";
 import { config as loadEnv } from "dotenv";
 import { erasmusMadrid } from "./sites/erasmusmadrid";
 import { nightlifeMadrid, pattFirstCircle } from "./sites/patt";
+import { esnUpm } from "./sites/eventupp";
+import { whan } from "./sites/whan";
 import { finalizeEvents } from "./lib/finalize";
 
 loadEnv({ path: ".env.local", quiet: true });
@@ -16,7 +18,7 @@ loadEnv({ path: ".env", quiet: true });
 const out = process.argv[2] ?? "src/lib/sample-events.json";
 
 async function main() {
-  const crawlers = [nightlifeMadrid, pattFirstCircle, erasmusMadrid];
+  const crawlers = [nightlifeMadrid, pattFirstCircle, erasmusMadrid, esnUpm, whan];
   const rows: Array<Record<string, unknown>> = [];
   for (const crawler of crawlers) {
     const events = finalizeEvents(await crawler.run());
@@ -37,9 +39,11 @@ async function main() {
         gmaps_url: e.gmapsUrl ?? null,
         city: e.city ?? "Madrid",
         genres: e.genres,
-        price_early: e.priceEarly ?? null,
-        price_normal: e.priceNormal ?? null,
-        currency: e.currency ?? "EUR",
+      price_early: e.priceEarly ?? null,
+      price_normal: e.priceNormal ?? null,
+      tickets_sale_at: e.ticketsSaleAt ?? null,
+      tickets_sale_note: e.ticketsSaleNote ?? null,
+      currency: e.currency ?? "EUR",
       });
     }
   }

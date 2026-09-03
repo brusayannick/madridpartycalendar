@@ -66,6 +66,9 @@ const NORMALIZE: Record<string, string> = {
   dnb: "Drum & Bass",
   reggaeton: "Reggaeton",
   regeton: "Reggaeton",
+  "reggaetón": "Reggaeton",
+  "música latina": "Latin",
+  "musica latina": "Latin",
   latin: "Latin",
   latina: "Latin",
   "hip hop": "Hip-Hop",
@@ -90,6 +93,7 @@ const NORMALIZE: Record<string, string> = {
 const INFER_RULES: Array<[RegExp, string[]]> = [
   [/\bpub\s*crawl|bar\s*crawl|botell[oó]n\s*tour\b/i, ["Pub Crawl"]],
   [/\bpool\s*party|beach\s*club\b/i, ["Pool Party"]],
+  [/\bafro\b/i, ["Afro House"]],
   [/language\s*exchange|meet\s*&&?\s*speak|intercambio\b/i, ["Language Exchange"]],
   [/\btechno\b/i, ["Techno"]],
   [/\bafro\s*house|\bamapiano\b/i, ["Afro House", "Amapiano"]],
@@ -113,7 +117,7 @@ function titleCase(s: string): string {
   return s
     .trim()
     .toLowerCase()
-    .replace(/\b\w/g, (c) => c.toUpperCase())
+    .replace(/(^|[\s&/'-])\p{L}/gu, (c) => c.toUpperCase())
     .replace(/\bAnd\b/g, "&")
     .replace(/\bDnb\b/g, "DnB")
     .replace(/\bEdm\b/g, "EDM")
@@ -129,8 +133,8 @@ export function normalizeGenres(tags: Array<string | null | undefined> | null | 
     // Source tags arrive messy ("Pop ", "Italian:, Urban") — split, keep letters/&/-.
     const parts = tag.split(/[,/]/);
     for (const part of parts) {
-      const cleaned = part.replace(/[^\p{L}\s&-]/gu, " ").replace(/\s+/g, " ").trim();
-      if (!cleaned) continue;
+    const cleaned = part.replace(/[^\p{L}\s&-]/gu, " ").replace(/\s+/g, " ").trim();
+    if (!cleaned || cleaned.toLowerCase() === "null") continue;
       const key = cleaned.toLowerCase();
       out.add(NORMALIZE[key] ?? titleCase(cleaned));
     }

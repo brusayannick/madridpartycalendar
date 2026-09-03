@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
 import Image from "next/image";
 import {
   ArrowUpRightIcon,
   CalendarDaysIcon,
   ClockIcon,
+  HourglassIcon,
   MapPinIcon,
   TicketIcon,
 } from "lucide-react";
@@ -18,12 +18,19 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { dayLabel, dateKey, sourceMeta, timeLabel, type EventRow } from "@/lib/events";
+import {
+  dayLabel,
+  dateKey,
+  saleOpensLabel,
+  sourceMeta,
+  timeLabel,
+  type EventRow,
+} from "@/lib/events";
 
 /** Full event details — bottom sheet on mobile, centered dialog on desktop. */
 export function EventSheet({ event, onClose }: { event: EventRow | null; onClose: () => void }) {
-  const [expanded, setExpanded] = useState(false);
   const source = sourceMeta(event?.source ?? "");
+  const saleOpens = event ? saleOpensLabel(event) : null;
 
   return (
     <Sheet open={Boolean(event)} onOpenChange={(open) => !open && onClose()}>
@@ -102,23 +109,28 @@ export function EventSheet({ event, onClose }: { event: EventRow | null; onClose
                   <span className="rounded-full bg-chart-5/15 px-2 py-0.5 text-sm font-semibold text-chart-5">
                     Free entry
                   </span>
+                ) : event.price_early == null && event.price_normal == null ? (
+                  <span className="text-muted-foreground">see ticket page</span>
                 ) : (
                   <span className="flex flex-wrap items-baseline gap-x-2">
-                    <span className="font-semibold tabular-nums">
-                      from {event.price_early ?? "?"}€
-                    </span>
-                    {event.price_normal != null &&
-                      event.price_normal !== event.price_early && (
-                        <span className="text-muted-foreground tabular-nums">
-                          up to {event.price_normal}€
-                        </span>
-                      )}
-                    {(event.price_early == null && event.price_normal == null) && (
-                      <span className="text-muted-foreground">see ticket page</span>
+                    <span className="font-semibold tabular-nums">from {event.price_early}€</span>
+                    {event.price_normal != null && event.price_normal !== event.price_early && (
+                      <span className="text-muted-foreground tabular-nums">
+                        up to {event.price_normal}€
+                      </span>
                     )}
                   </span>
                 )}
               </div>
+              {saleOpens && (
+                <div className="flex items-center gap-3">
+                  <HourglassIcon className="size-4.5 shrink-0 text-chart-3" />
+                  <span className="text-muted-foreground">
+                    Ticket sales open{saleOpens.includes(":") ? "" : ":"}{" "}
+                    <span className="font-medium text-foreground tabular-nums">{saleOpens}</span>
+                  </span>
+                </div>
+              )}
             </div>
 
             {event.genres.length > 0 && (
@@ -135,23 +147,9 @@ export function EventSheet({ event, onClose }: { event: EventRow | null; onClose
             )}
 
             {event.description && (
-              <div className="space-y-1.5">
-                <p
-                  className={`text-sm leading-relaxed whitespace-pre-line text-muted-foreground ${
-                    expanded ? "" : "line-clamp-5"
-                  }`}
-                >
-                  {event.description}
-                </p>
-                {event.description.length > 280 && (
-                  <button
-                    onClick={() => setExpanded((v) => !v)}
-                    className="text-xs font-medium text-primary hover:underline"
-                  >
-                    {expanded ? "Show less" : "Read more"}
-                  </button>
-                )}
-              </div>
+              <p className="text-sm leading-relaxed whitespace-pre-line text-muted-foreground">
+                {event.description}
+              </p>
             )}
           </div>
 

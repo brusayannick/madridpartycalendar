@@ -38,6 +38,10 @@ export interface CrawlerEvent {
   tiers?: PriceTier[];
   priceEarly?: number | null;
   priceNormal?: number | null;
+  /** When ticket sales open, if the source announces it (ISO). */
+  ticketsSaleAt?: string;
+  /** Raw sale-announcement text when a date could not be parsed. */
+  ticketsSaleNote?: string;
   currency: string;
   /** Original payload kept in the `raw` column for debugging. */
   raw?: unknown;

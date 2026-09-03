@@ -14,6 +14,7 @@
  */
 import { fetchJson } from "../lib/http";
 import { htmlToText } from "../lib/time";
+import { parseSaleOpens } from "../lib/saleOpens";
 import { sleep, type CrawlerEvent, type PriceTier, type SiteCrawler } from "../lib/types";
 
 const API = "https://everywhereback.azurewebsites.net";
@@ -40,6 +41,8 @@ interface PattTicket {
   price?: number;
   hidePrice?: boolean;
   displayOnly?: boolean;
+  /** Sale-start of the tier: ISO string or epoch ms; usually null. */
+  StartSale?: string | number | null;
 }
 
 interface PattListResponse {
@@ -95,6 +98,27 @@ function makePattCrawler(config: {
               currency: ev.currency ?? "EUR",
             }));
 
+          // Ticket-sale announcements: promoters either set a tier's StartSale
+          // timestamp or add a display row like "TICKET SALES OPEN THURSDAY,
+          // SEPTEMBER 3RD AT 18:00 (6PM)!".
+          const startsAtIso = new Date(ev.dateAndHour).toISOString();
+          let ticketsSaleAt: string | undefined;
+          for (const t of detail.tickets ?? []) {
+            const candidates: string[] = [];
+            if (t.StartSale) {
+              const d = new Date(typeof t.StartSale === "number" ? t.StartSale : String(t.StartSale));
+              if (!Number.isNaN(d.getTime())) candidates.push(d.toISOString());
+            }
+            const parsed = parseSaleOpens(t.ticketType ?? "", startsAtIso);
+            if (parsed?.at) candidates.push(parsed.at);
+            for (const iso of candidates) {
+              if (!ticketsSaleAt || iso < ticketsSaleAt) ticketsSaleAt = iso;
+            }
+          }
+          const saleNote = (detail.tickets ?? [])
+            .map((t) => parseSaleOpens(t.ticketType ?? "", startsAtIso))
+            .find((p) => p?.note)?.note;
+
           out.push({
             source: config.id,
             externalId: ev._id,
@@ -108,6 +132,8 @@ function makePattCrawler(config: {
             city: ev.city?.join(", "),
             genres: ev.music_type ?? [],
             tiers,
+            ticketsSaleAt,
+            ticketsSaleNote: saleNote,
             currency: ev.currency || "EUR",
             raw: ev,
           });

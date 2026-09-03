@@ -17,6 +17,8 @@ export interface EventRow {
   genres: string[];
   price_early: number | null;
   price_normal: number | null;
+  tickets_sale_at: string | null;
+  tickets_sale_note: string | null;
   currency: string;
 }
 
@@ -24,6 +26,8 @@ export const SOURCE_META: Record<string, { label: string; dot: string }> = {
   nightlifemadrid: { label: "Nightlife Madrid", dot: "#22d3ee" },
   patt_firstcircle: { label: "First Circle", dot: "#a78bfa" },
   erasmusmadrid: { label: "Erasmus Madrid", dot: "#fb7185" },
+  esnupm: { label: "ESN UPM", dot: "#fbbf24" },
+  whan: { label: "Whan", dot: "#34d399" },
 };
 
 export function sourceMeta(source: string) {
@@ -55,6 +59,25 @@ export function dayLabel(key: string): string {
   }).format(new Date(`${key}T12:00:00Z`));
 }
 
+/**
+ * "Thu 3 Sep, 18:00" for an upcoming ticket-sale start; null when sales are
+ * already open (start in the past) or not announced. Falls back to a raw note
+ * when the source announced sales in prose we could not parse.
+ */
+export function saleOpensLabel(e: EventRow, now = Date.now()): string | null {
+  if (!e.tickets_sale_at) return e.tickets_sale_note ?? null;
+  const at = new Date(e.tickets_sale_at);
+  if (Number.isNaN(at.getTime()) || at.getTime() <= now) return null;
+  return new Intl.DateTimeFormat("en-GB", {
+    timeZone: TZ,
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(at);
+}
+
 export function todayKey(): string {
   return new Intl.DateTimeFormat("en-CA", { timeZone: TZ }).format(new Date());
 }
@@ -75,8 +98,7 @@ export function isFree(e: EventRow): boolean {
 }
 
 /** Compact price for cards: "Free", "18€", "7–15€". */
-export function priceLabel(e: EventRow): string {
-  const early = e.price_early;
+export function priceLabel(e: EventRow): string {  const early = e.price_early;
   const normal = e.price_normal;
   if (early == null && normal == null) return "—";
   if (early === 0) return "Free";

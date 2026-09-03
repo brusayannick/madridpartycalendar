@@ -30,6 +30,13 @@ const EXCLUDE_RE_ = new RegExp(
 
 const FREE_RE = /\bfree\b|entrada\s*libre|gratis/i;
 
+/**
+ * Tiers that are announcements, not sellable tickets — e.g. PATT promoters
+ * add "TICKET SALES OPEN THURSDAY … AT 18:00!" as a price-0 display row.
+ * Dropped from price resolution (parsed as sale info by the crawler instead).
+ */
+export const SALE_INFO_RE = /sales?\s+open|tickets?\s+open|opens?\s+on\s+(mon|tue|wed|thu|fri|sat|sun)/i;
+
 // Marker for early/first-release tiers, kept for future per-tier display.
 export const EARLY_RE =
   /\b(early\s*bird|first\s*release|second\s*release|third\s*release|pre-?sale|advance|early)\b/i;
@@ -49,7 +56,7 @@ export interface ResolvedPrices {
  */
 export function resolvePrices(tiers: PriceTier[]): ResolvedPrices {
   const kept = tiers
-    .filter((t) => t.name == null || !EXCLUDE_RE_.test(t.name))
+    .filter((t) => t.name == null || (!EXCLUDE_RE_.test(t.name) && !SALE_INFO_RE.test(t.name)))
     .map((t) => ({ ...t, price: t.price ?? (FREE_RE.test(t.name ?? "") ? 0 : null) }))
     .filter((t): t is PriceTier & { price: number } => t.price != null);
 

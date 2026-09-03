@@ -17,6 +17,7 @@ import { fetchJson, fetchText } from "../lib/http";
 import { htmlToText, madridToUtc, madridToday, parsePrice } from "../lib/time";
 import { sleep, type CrawlerEvent, type PriceTier, type SiteCrawler } from "../lib/types";
 import { inferGenres } from "../lib/genres";
+import { parseSaleOpens } from "../lib/saleOpens";
 
 const BASE = "https://erasmusmadrid.org";
 const API = `${BASE}/wp-json/tribe/events/v1/events`;
@@ -197,6 +198,12 @@ export const erasmusMadrid: SiteCrawler = {
 
       const description = cleanDescription(ev.description ?? "");
       const searchText = `${ev.title}\n${description ?? ""}`;
+      // Sale announcements live in pasted ticket text ("Start sale: 8/26/2026
+      // at 7:00pm") or tier names ("TICKET 1 — Early Bird …").
+      const sale = parseSaleOpens(
+        `${tiers.map((t) => t.name).join("\n")}\n${ev.description ?? ""}`,
+        startsAt,
+      );
       const genreSet = new Set<string>(
         (ev.categories ?? [])
           .map((c) => CATEGORY_GENRES[c.slug] ?? CATEGORY_GENRES[c.name.toLowerCase()] )
@@ -218,6 +225,8 @@ export const erasmusMadrid: SiteCrawler = {
         city: "Madrid",
         genres: [...genreSet],
         tiers,
+        ticketsSaleAt: sale?.at,
+        ticketsSaleNote: sale?.note,
         currency: "EUR",
         raw: { id: ev.id, start_date: ev.start_date, categories: ev.categories?.map((c) => c.slug) },
       });

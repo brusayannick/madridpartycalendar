@@ -20,6 +20,8 @@ create table if not exists public.events (
   genres text[] not null default '{}',
   price_early numeric(8,2),                -- cheapest standard entry tier (0 = free entry)
   price_normal numeric(8,2),               -- regular / door tier
+  tickets_sale_at timestamptz,             -- when ticket sales open (if announced)
+  tickets_sale_note text,                  -- raw announcement text when not parseable
   currency text not null default 'EUR',
   raw jsonb,                               -- original crawler payload for debugging
   created_at timestamptz not null default now(),
@@ -29,6 +31,11 @@ create table if not exists public.events (
 
 create index if not exists events_starts_at_idx on public.events (starts_at);
 create index if not exists events_genres_idx on public.events using gin (genres);
+
+-- Migration for databases created before ticket-sale info existed:
+-- alter table public.events
+--   add column if not exists tickets_sale_at timestamptz,
+--   add column if not exists tickets_sale_note text;
 
 -- Keep updated_at fresh on upserts.
 create or replace function public.touch_updated_at()

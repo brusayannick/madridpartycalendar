@@ -46,6 +46,7 @@ Every crawler returns an array of `CrawlerEvent` (`crawlers/lib/types.ts`):
 | `city`        |    | Only events whose city matches Madrid are kept (`finalizeEvents`); missing city = kept. |
 | `genres`      |    | Source tags if available; otherwise `finalizeEvents` infers from title+description. |
 | `tiers`       |    | Raw ticket tiers `{name, price}` — resolved to `priceEarly`/`priceNormal` (see below). |
+| `ticketsSaleAt` / `ticketsSaleNote` | | When ticket sales open. Use `parseSaleOpens(text, eventStartIso)` from `lib/saleOpens.ts` on tier names/descriptions, or take structured timestamps (PATT `StartSale`). |
 | `currency`    |    | Defaults to `EUR`. |
 | `raw`         |    | Original payload stored in the `raw` jsonb column for debugging. Keep it small. |
 
@@ -69,6 +70,12 @@ PATT models escalating releases as separate tier rows ("First Release 25",
 then 30 when sold out), which is why min/max works there. Erasmus Madrid's
 tier names ("TICKET 1 — Early Bird", "Standard", "Last Minute", "30-Day
 Unlimited Pass") come from the TEC ticket form on each event page.
+
+Announcement rows like "TICKET SALES OPEN THURSDAY, SEPTEMBER 3RD AT 18:00!"
+are **not** treated as tickets: `SALE_INFO_RE` excludes them from pricing and
+`lib/saleOpens.ts` turns them into `ticketsSaleAt` (or `ticketsSaleNote` when
+the prose can't be parsed). The UI shows the sale start only while it is in
+the future.
 
 ## Genre taxonomy
 

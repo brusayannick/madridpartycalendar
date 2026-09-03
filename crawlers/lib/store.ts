@@ -43,6 +43,8 @@ function toRow(e: CrawlerEvent) {
     genres: e.genres,
     price_early: e.priceEarly ?? null,
     price_normal: e.priceNormal ?? null,
+    tickets_sale_at: e.ticketsSaleAt ?? null,
+    tickets_sale_note: e.ticketsSaleNote ?? null,
     currency: e.currency ?? "EUR",
     raw: e.raw ?? null,
   };

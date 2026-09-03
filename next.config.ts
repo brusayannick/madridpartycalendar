@@ -13,6 +13,10 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "everywherestorage.blob.core.windows.net" },
       // erasmusmadrid.org WordPress uploads.
       { protocol: "https", hostname: "erasmusmadrid.org" },
+      // Whan event images.
+      { protocol: "https", hostname: "app.whan.es" },
+      // EventUpp (ESN UPM) event images.
+      { protocol: "https", hostname: "api.eventupp.eu" },
     ],
   },
 };

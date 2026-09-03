@@ -14,10 +14,12 @@ multiple sources — club nights, pubcrawls, pool parties — in one clean app.
 | Nightlife Madrid | <https://tickets.nightlifemadrid.com/en> | PATT backend API (list + ticket tiers per event) |
 | First Circle | <https://events.patt.club/crew/FirstCircle> | Same PATT backend, promoter `FirstCircle` |
 | Erasmus Madrid | <https://erasmusmadrid.org/events/> | The Events Calendar REST API + event pages for ticket tiers |
+| ESN UPM | <https://esnupm.org/es/eventos> | EventUpp API (the Drupal site embeds eventupp.eu) |
+| Whan | <https://app.whan.es/explore> | Whan public explore API (paginated — replaces the site's infinite scroll) |
 
 Each event stores: date, start/end time, early-bird & normal price (VIP/table
-tiers filtered out), ticket URL, genres, venue + Google Maps link, description
-and image. Madrid-only.
+tiers filtered out), ticket-sale start when announced, ticket URL, genres,
+venue + Google Maps link, description and image. Madrid-only.
 
 ## Setup
 
