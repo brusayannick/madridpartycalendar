@@ -6,21 +6,29 @@
  *
  *   GET https://app.whan.es/api/v1/public/explore?page[number]=N&page[size]=50
  *        → { data: [{ type, id, attributes: { name, mainImage,
- *             startDateTime, endDateTime, eventType, musicType,
- *             club: { name, province, city, timezone } } }],
- *            meta: { total, totalPages, … } }
+ *             startDateTime, endDateTime, musicType, club: {…} } }],
+ *            meta: { totalPages } }
  *
- * The list carries no prices/descriptions (the public API exposes none), so
- * events show without price until Whan exposes them. Public event page:
- * https://app.whan.es/event/{id} (redirects to the slug URL).
+ * Prices/descriptions live in a per-event detail endpoint (also public):
+ *
+ *   GET https://app.whan.es/api/v1/event/{id}?preview=1
+ *        → description, slug, dressCode, club.locationLink (gmaps place),
+ *           generalTicketsEnabled[].tiers[] (price phases, e.g. "1X18€"),
+ *           publicEventLists[] (free guest lists). Tables/floor groups are
+ *           deliberately ignored (VIP/table upsells).
+ *
+ * Public event page: https://app.whan.es/event/{slug}
  * Images: https://app.whan.es/event/img/{id}?v={mainImage}&w=480
  */
 import { fetchJson } from "../lib/http";
-import { sleep, type CrawlerEvent, type SiteCrawler } from "../lib/types";
+import { htmlToText, parsePrice } from "../lib/time";
+import { sleep, type CrawlerEvent, type PriceTier, type SiteCrawler } from "../lib/types";
 
-const API = "https://app.whan.es/api/v1/public/explore";
+const EXPLORE_API = "https://app.whan.es/api/v1/public/explore";
+const DETAIL_API = "https://app.whan.es/api/v1/event";
 const PAGE_SIZE = 50;
 const MAX_PAGES = 30;
+const DELAY_MS = 300;
 
 interface WhanItem {
   type: string;
@@ -41,6 +49,29 @@ interface WhanResponse {
   meta?: { totalPages?: number };
 }
 
+interface WhanTicketTier {
+  name?: string | null;
+  price?: string | number | null;
+  state?: string;
+}
+
+interface WhanDetail {
+  slug?: string;
+  description?: string | null;
+  dressCode?: string | null;
+  additionalInfo?: string | null;
+  musicType?: string;
+  club?: { name?: string; locationLink?: string | null };
+  generalTicketsEnabled?: Array<{
+    name?: string;
+    price?: string | number | null;
+    saleDisabled?: boolean;
+    usesTiers?: boolean;
+    tiers?: WhanTicketTier[];
+  }>;
+  publicEventLists?: Array<{ name?: string; price?: string | number | null; completed?: boolean }>;
+}
+
 export const whan: SiteCrawler = {
   id: "whan",
   label: "Whan",
@@ -51,7 +82,7 @@ export const whan: SiteCrawler = {
 
     for (; page <= totalPages && page <= MAX_PAGES; page++) {
       const res = await fetchJson<WhanResponse>(
-        `${API}?page%5Bnumber%5D=${page}&page%5Bsize%5D=${PAGE_SIZE}`,
+        `${EXPLORE_API}?page%5Bnumber%5D=${page}&page%5Bsize%5D=${PAGE_SIZE}`,
       );
       totalPages = Math.min(res.meta?.totalPages ?? 1, MAX_PAGES);
 
@@ -72,24 +103,83 @@ export const whan: SiteCrawler = {
         // id — key by id + occurrence date so each night becomes its own row.
         const dateKey = startDateTime.slice(0, 10);
 
+        // Prices, description, gmaps link and slug only exist in the detail.
+        let tiers: PriceTier[] = [];
+        let description: string | undefined;
+        let gmapsUrl: string | undefined;
+        let venueName = clubInfo.name?.trim();
+        let url = `https://app.whan.es/event/${item.id}`;
+        let genres = musicType ? [musicType] : [];
+        try {
+          await sleep(DELAY_MS);
+          const detail = await fetchJson<WhanDetail>(`${DETAIL_API}/${item.id}?preview=1`);
+          if (detail.slug) url = `https://app.whan.es/event/${detail.slug}`;
+          if (detail.club?.name) venueName = detail.club.name.trim();
+          gmapsUrl = detail.club?.locationLink ?? undefined;
+          const genreTag = detail.musicType || musicType;
+          genres = genreTag ? [genreTag] : [];
+          description = htmlToText(
+            [
+              detail.description ?? "",
+              detail.dressCode ? `Dress code: ${detail.dressCode}.` : "",
+              detail.additionalInfo ?? "",
+            ]
+              .filter(Boolean)
+              .join("\n\n"),
+          );
+
+          const ticketTiers: PriceTier[] = [];
+          for (const ticket of detail.generalTicketsEnabled ?? []) {
+            if (ticket.saleDisabled) continue;
+            const inner = ticket.usesTiers && ticket.tiers?.length
+              ? ticket.tiers
+              : [{ name: ticket.name, price: ticket.price }];
+            for (const tier of inner) {
+              const price = parsePrice(String(tier.price ?? ""));
+              if (price != null) {
+                ticketTiers.push({
+                  name: `${ticket.name ?? ""} ${tier.name ?? ""}`.trim() || "Ticket",
+                  price,
+                  currency: "EUR",
+                });
+              }
+            }
+          }
+          // Free guest lists ("CHICAS GRATIS ANTES DE LA 01:30") count as
+          // free entry; closed lists are ignored.
+          for (const list of detail.publicEventLists ?? []) {
+            if (list.completed || !list.name) continue;
+            const price = parsePrice(String(list.price ?? ""));
+            if (price != null) ticketTiers.push({ name: list.name, price, currency: "EUR" });
+          }
+          tiers = ticketTiers;
+        } catch (error) {
+          console.warn(
+            `  [whan] detail failed for ${name}: ${error instanceof Error ? error.message : error}`,
+          );
+        }
+
         out.push({
           source: "whan",
           externalId: `${item.id}|${dateKey}`,
           title: name.trim(),
+          description,
           startsAt,
           endsAt: endDateTime ? new Date(endDateTime).toISOString() : undefined,
-          url: `https://app.whan.es/event/${item.id}`,
+          url,
           imageUrl: mainImage
             ? `https://app.whan.es/event/img/${item.id}?v=${encodeURIComponent(mainImage)}&w=480`
             : undefined,
-          venueName: clubInfo.name?.trim() || undefined,
+          venueName: venueName || undefined,
+          gmapsUrl,
           city: "Madrid",
-          genres: musicType ? [musicType] : [],
+          genres,
+          tiers,
           currency: "EUR",
           raw: item.attributes,
         });
       }
-      await sleep(400);
+      await sleep(200);
     }
     return out;
   },
