@@ -12,9 +12,10 @@ import { erasmusMadrid } from "./sites/erasmusmadrid";
 import { nightlifeMadrid, pattFirstCircle } from "./sites/patt";
 import { esnUpm } from "./sites/eventupp";
 import { whan } from "./sites/whan";
+import { dedupeAcrossSources } from "./lib/dedupe";
 import { finalizeEvents } from "./lib/finalize";
-import { prunePastEvents, upsertEvents } from "./lib/store";
-import type { SiteCrawler } from "./lib/types";
+import { deleteEvents, prunePastEvents, upsertEvents } from "./lib/store";
+import type { CrawlerEvent, SiteCrawler } from "./lib/types";
 
 /**
  * Load .env.local (wins) then .env, without letting a placeholder value
@@ -74,28 +75,56 @@ async function main() {
     process.exit(1);
   }
 
+  // 1) Crawl every source and collect normalized events.
+  const collected: CrawlerEvent[] = [];
   for (const crawler of selected) {
     console.log(`\n▶ ${crawler.label} (${crawler.id})`);
     try {
       const raw = await crawler.run();
-      const events = finalizeEvents(raw).sort(
-        (a, b) => new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime(),
-      );
+      const events = finalizeEvents(raw);
+      collected.push(...events);
       console.log(`  ${raw.length} fetched, ${events.length} after filters (Madrid, future, valid)`);
-
-      if (args.dry) {
-        preview(events);
-        continue;
-      }
-      await upsertEvents(events);
-      console.log(`  ✓ upserted ${events.length} events`);
-      if (args.prune) {
-        const removed = await prunePastEvents(crawler.id);
-        console.log(`  ✓ pruned ${removed} past events`);
-      }
     } catch (error) {
       console.error(`  ✗ ${crawler.id} failed: ${error instanceof Error ? error.message : error}`);
       process.exitCode = 1;
+    }
+  }
+
+  // 2) Drop the same event listed by several promoters (e.g. nightlifemadrid
+  //    and First Circle both sell "Irreverente Rooftop").
+  const { kept, removed } = dedupeAcrossSources(collected);
+  kept.sort((a, b) => new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime());
+  if (removed.length > 0) {
+    console.log(`\n⨯ dropped ${removed.length} cross-listed duplicate(s)`);
+  }
+
+  // 3) Write (or preview).
+  if (args.dry) {
+    preview(kept);
+    return;
+  }
+
+  if (kept.length > 0) {
+    await upsertEvents(kept);
+    console.log(`\n✓ upserted ${kept.length} events`);
+  }
+
+  // Remove duplicate rows from previous runs (lower-priority source copies).
+  const removedBySource = new Map<string, string[]>();
+  for (const event of removed) {
+    const ids = removedBySource.get(event.source) ?? [];
+    ids.push(event.externalId);
+    removedBySource.set(event.source, ids);
+  }
+  for (const [source, ids] of removedBySource) {
+    const deleted = await deleteEvents(source, ids);
+    if (deleted > 0) console.log(`  ✓ deleted ${deleted} stale ${source} duplicate(s)`);
+  }
+
+  if (args.prune) {
+    for (const crawler of selected) {
+      const pruned = await prunePastEvents(crawler.id);
+      if (pruned > 0) console.log(`  ✓ pruned ${pruned} past ${crawler.id} events`);
     }
   }
 }

@@ -10,7 +10,9 @@ import { erasmusMadrid } from "./sites/erasmusmadrid";
 import { nightlifeMadrid, pattFirstCircle } from "./sites/patt";
 import { esnUpm } from "./sites/eventupp";
 import { whan } from "./sites/whan";
+import { dedupeAcrossSources } from "./lib/dedupe";
 import { finalizeEvents } from "./lib/finalize";
+import type { CrawlerEvent } from "./lib/types";
 
 loadEnv({ path: ".env.local", quiet: true });
 loadEnv({ path: ".env", quiet: true });
@@ -19,34 +21,37 @@ const out = process.argv[2] ?? "src/lib/sample-events.json";
 
 async function main() {
   const crawlers = [nightlifeMadrid, pattFirstCircle, erasmusMadrid, esnUpm, whan];
-  const rows: Array<Record<string, unknown>> = [];
+  const collected: CrawlerEvent[] = [];
   for (const crawler of crawlers) {
     const events = finalizeEvents(await crawler.run());
     console.log(`${crawler.id}: ${events.length} events`);
-    for (const e of events) {
-      rows.push({
-        id: `${e.source}-${e.externalId}`,
-        source: e.source,
-        external_id: e.externalId,
-        title: e.title,
-        description: e.description ?? null,
-        starts_at: e.startsAt,
-        ends_at: e.endsAt ?? null,
-        url: e.url,
-        image_url: e.imageUrl ?? null,
-        venue_name: e.venueName ?? null,
-        venue_address: e.venueAddress ?? null,
-        gmaps_url: e.gmapsUrl ?? null,
-        city: e.city ?? "Madrid",
-        genres: e.genres,
-      price_early: e.priceEarly ?? null,
-      price_normal: e.priceNormal ?? null,
-      tickets_sale_at: e.ticketsSaleAt ?? null,
-      tickets_sale_note: e.ticketsSaleNote ?? null,
-      currency: e.currency ?? "EUR",
-      });
-    }
+    collected.push(...events);
   }
+
+  const { kept, removed } = dedupeAcrossSources(collected);
+  console.log(`deduped ${removed.length} cross-listed duplicates`);
+
+  const rows: Array<Record<string, unknown>> = kept.map((e) => ({
+    id: `${e.source}-${e.externalId}`,
+    source: e.source,
+    external_id: e.externalId,
+    title: e.title,
+    description: e.description ?? null,
+    starts_at: e.startsAt,
+    ends_at: e.endsAt ?? null,
+    url: e.url,
+    image_url: e.imageUrl ?? null,
+    venue_name: e.venueName ?? null,
+    venue_address: e.venueAddress ?? null,
+    gmaps_url: e.gmapsUrl ?? null,
+    city: e.city ?? "Madrid",
+    genres: e.genres,
+    price_early: e.priceEarly ?? null,
+    price_normal: e.priceNormal ?? null,
+    tickets_sale_at: e.ticketsSaleAt ?? null,
+    tickets_sale_note: e.ticketsSaleNote ?? null,
+    currency: e.currency ?? "EUR",
+  }));
 
   rows.sort((a, b) => String(a.starts_at).localeCompare(String(b.starts_at)));
   writeFileSync(out, JSON.stringify(rows, null, 2));

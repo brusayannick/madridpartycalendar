@@ -74,3 +74,21 @@ export async function prunePastEvents(source: string): Promise<number> {
   if (error) throw new Error(`Prune failed: ${error.message}`);
   return count ?? 0;
 }
+
+/** Delete specific rows (source + external ids) — used for stale duplicates. */
+export async function deleteEvents(source: string, externalIds: string[]): Promise<number> {
+  if (externalIds.length === 0) return 0;
+  const supabase = getSupabaseAdmin();
+  let deleted = 0;
+  const CHUNK = 200;
+  for (let i = 0; i < externalIds.length; i += CHUNK) {
+    const { count, error } = await supabase
+      .from("events")
+      .delete({ count: "exact" })
+      .eq("source", source)
+      .in("external_id", externalIds.slice(i, i + CHUNK));
+    if (error) throw new Error(`Delete failed: ${error.message}`);
+    deleted += count ?? 0;
+  }
+  return deleted;
+}
