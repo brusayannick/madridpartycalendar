@@ -20,6 +20,10 @@ create table if not exists public.events (
   genres text[] not null default '{}',
   price_early numeric(8,2),                -- cheapest standard entry tier (0 = free entry)
   price_normal numeric(8,2),               -- regular / door tier
+  price_early_male numeric(8,2),           -- men's price when gender-specific tiers exist
+  price_normal_male numeric(8,2),
+  price_early_female numeric(8,2),         -- women's price when gender-specific tiers exist
+  price_normal_female numeric(8,2),
   tickets_sale_at timestamptz,             -- when ticket sales open (if announced)
   tickets_sale_note text,                  -- raw announcement text when not parseable
   currency text not null default 'EUR',
@@ -36,6 +40,13 @@ create index if not exists events_genres_idx on public.events using gin (genres)
 -- alter table public.events
 --   add column if not exists tickets_sale_at timestamptz,
 --   add column if not exists tickets_sale_note text;
+
+-- Migration for databases created before gender-specific prices existed:
+-- alter table public.events
+--   add column if not exists price_early_male numeric(8,2),
+--   add column if not exists price_normal_male numeric(8,2),
+--   add column if not exists price_early_female numeric(8,2),
+--   add column if not exists price_normal_female numeric(8,2);
 
 -- Keep updated_at fresh on upserts.
 create or replace function public.touch_updated_at()

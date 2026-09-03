@@ -21,16 +21,31 @@ import {
 import {
   dayLabel,
   dateKey,
+  effectivePrices,
   saleOpensLabel,
   sourceMeta,
   timeLabel,
   type EventRow,
+  type Gender,
 } from "@/lib/events";
 
 /** Full event details — bottom sheet on mobile, centered dialog on desktop. */
-export function EventSheet({ event, onClose }: { event: EventRow | null; onClose: () => void }) {
+export function EventSheet({
+  event,
+  gender,
+  onClose,
+}: {
+  event: EventRow | null;
+  gender: Gender;
+  onClose: () => void;
+}) {
   const source = sourceMeta(event?.source ?? "");
   const saleOpens = event ? saleOpensLabel(event) : null;
+  const prices = event ? effectivePrices(event, gender) : { early: null, normal: null };
+  const gendered =
+    event != null &&
+    ((gender === "female" && event.price_early_female != null) ||
+      (gender === "male" && event.price_early_male != null));
 
   return (
     <Sheet open={Boolean(event)} onOpenChange={(open) => !open && onClose()}>
@@ -105,18 +120,25 @@ export function EventSheet({ event, onClose }: { event: EventRow | null; onClose
               )}
               <div className="flex items-center gap-3">
                 <TicketIcon className="size-4.5 shrink-0 text-primary" />
-                {event.price_early === 0 ? (
-                  <span className="rounded-full bg-chart-5/15 px-2 py-0.5 text-sm font-semibold text-chart-5">
-                    Free entry
+                {prices.early === 0 ? (
+                  <span className="flex flex-wrap items-baseline gap-x-2">
+                    <span className="rounded-full bg-chart-5/15 px-2 py-0.5 text-sm font-semibold text-chart-5">
+                      Free entry{gendered ? (gender === "female" ? " · women" : " · men") : ""}
+                    </span>
+                    {prices.normal != null && prices.normal > 0 && (
+                      <span className="text-muted-foreground text-xs tabular-nums">
+                        later/up to {prices.normal}€
+                      </span>
+                    )}
                   </span>
-                ) : event.price_early == null && event.price_normal == null ? (
+                ) : prices.early == null && prices.normal == null ? (
                   <span className="text-muted-foreground">see ticket page</span>
                 ) : (
                   <span className="flex flex-wrap items-baseline gap-x-2">
-                    <span className="font-semibold tabular-nums">from {event.price_early}€</span>
-                    {event.price_normal != null && event.price_normal !== event.price_early && (
+                    <span className="font-semibold tabular-nums">from {prices.early}€</span>
+                    {prices.normal != null && prices.normal !== prices.early && (
                       <span className="text-muted-foreground tabular-nums">
-                        up to {event.price_normal}€
+                        up to {prices.normal}€
                       </span>
                     )}
                   </span>

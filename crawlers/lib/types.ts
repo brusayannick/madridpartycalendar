@@ -34,10 +34,15 @@ export interface CrawlerEvent {
   gmapsUrl?: string;
   city?: string;
   genres: string[];
-  /** Raw ticket tiers; resolved to priceEarly/priceNormal by resolvePrices(). */
+  /** Raw ticket tiers; resolved to prices by resolvePrices(). */
   tiers?: PriceTier[];
   priceEarly?: number | null;
   priceNormal?: number | null;
+  /** Male/female prices when gender-specific tiers exist (guest lists). */
+  priceEarlyMale?: number | null;
+  priceNormalMale?: number | null;
+  priceEarlyFemale?: number | null;
+  priceNormalFemale?: number | null;
   /** When ticket sales open, if the source announces it (ISO). */
   ticketsSaleAt?: string;
   /** Raw sale-announcement text when a date could not be parsed. */

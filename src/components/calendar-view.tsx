@@ -14,6 +14,7 @@ import {
   addDaysKey,
   applyFilters,
   dayLabel,
+  emptyFilters,
   Filters,
   groupByDay,
   todayKey,
@@ -24,11 +25,7 @@ const MAX_DAYS = 120;
 
 export function CalendarView({ events, demo }: { events: EventRow[]; demo: boolean }) {
   const [selectedKey, setSelectedKey] = useState(() => todayKey());
-  const [filters, setFilters] = useState<Filters>({
-    genres: new Set(),
-    priceBuckets: new Set(),
-    sources: new Set(),
-  });
+  const [filters, setFilters] = useState<Filters>(emptyFilters);
   const [openEvent, setOpenEvent] = useState<EventRow | null>(null);
   const [filterOpen, setFilterOpen] = useState(false);
 
@@ -150,7 +147,12 @@ export function CalendarView({ events, demo }: { events: EventRow[]; demo: boole
                 }}
               >
                 {selectedDayEvents.map((event) => (
-                  <EventCard key={event.id} event={event} onOpen={() => setOpenEvent(event)} />
+                  <EventCard
+                    key={event.id}
+                    event={event}
+                    gender={filters.gender}
+                    onOpen={() => setOpenEvent(event)}
+                  />
                 ))}
               </motion.div>
             ) : (
@@ -169,13 +171,7 @@ export function CalendarView({ events, demo }: { events: EventRow[]; demo: boole
                   </p>
                 </div>
                 {filterCount > 0 && (
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() =>
-                      setFilters({ genres: new Set(), priceBuckets: new Set(), sources: new Set() })
-                    }
-                  >
+                  <Button variant="secondary" size="sm" onClick={() => setFilters(emptyFilters())}>
                     Clear filters
                   </Button>
                 )}
@@ -185,7 +181,11 @@ export function CalendarView({ events, demo }: { events: EventRow[]; demo: boole
         </motion.div>
       </main>
 
-      <EventSheet event={openEvent} onClose={() => setOpenEvent(null)} />
+      <EventSheet
+        event={openEvent}
+        gender={filters.gender}
+        onClose={() => setOpenEvent(null)}
+      />
       <FilterSheet
         events={events}
         filters={filters}

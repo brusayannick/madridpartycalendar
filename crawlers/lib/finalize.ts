@@ -24,7 +24,16 @@ export function finalizeEvents(events: CrawlerEvent[]): CrawlerEvent[] {
     .filter(isMadrid)
     .filter((e) => new Date(e.startsAt).getTime() >= now)
     .map((e) => {
-      const prices = e.tiers?.length ? resolvePrices(e.tiers) : { early: e.priceEarly ?? null, normal: e.priceNormal ?? null };
+      const prices = e.tiers?.length
+        ? resolvePrices(e.tiers)
+        : {
+            early: e.priceEarly ?? null,
+            normal: e.priceNormal ?? null,
+            maleEarly: null,
+            maleNormal: null,
+            femaleEarly: null,
+            femaleNormal: null,
+          };
       let genres = normalizeGenres(e.genres);
       if (genres.length === 0) genres = inferGenres(e.title, e.description);
       return {
@@ -32,6 +41,10 @@ export function finalizeEvents(events: CrawlerEvent[]): CrawlerEvent[] {
         city: "Madrid",
         priceEarly: prices.early,
         priceNormal: prices.normal,
+        priceEarlyMale: prices.maleEarly,
+        priceNormalMale: prices.maleNormal,
+        priceEarlyFemale: prices.femaleEarly,
+        priceNormalFemale: prices.femaleNormal,
         genres,
         gmapsUrl: e.gmapsUrl ?? gmapsUrl(e.venueName),
       };

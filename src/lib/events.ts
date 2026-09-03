@@ -17,10 +17,17 @@ export interface EventRow {
   genres: string[];
   price_early: number | null;
   price_normal: number | null;
+  price_early_male: number | null;
+  price_normal_male: number | null;
+  price_early_female: number | null;
+  price_normal_female: number | null;
   tickets_sale_at: string | null;
   tickets_sale_note: string | null;
   currency: string;
 }
+
+/** Selected audience for price display/filtering. */
+export type Gender = "any" | "female" | "male";
 
 export const SOURCE_META: Record<string, { label: string; dot: string }> = {
   nightlifemadrid: { label: "Nightlife Madrid", dot: "#22d3ee" },
@@ -88,18 +95,33 @@ export function addDaysKey(key: string, days: number): string {
   return d.toISOString().slice(0, 10);
 }
 
-export function effectiveMinPrice(e: EventRow): number | null {
-  if (e.price_early != null) return e.price_early;
-  return e.price_normal;
+/** Price pair for the selected audience; falls back to the default pair. */
+export function effectivePrices(
+  e: EventRow,
+  gender: Gender = "any",
+): { early: number | null; normal: number | null } {
+  if (gender === "female" && e.price_early_female != null) {
+    return { early: e.price_early_female, normal: e.price_normal_female };
+  }
+  if (gender === "male" && e.price_early_male != null) {
+    return { early: e.price_early_male, normal: e.price_normal_male };
+  }
+  return { early: e.price_early, normal: e.price_normal };
 }
 
-export function isFree(e: EventRow): boolean {
-  return effectiveMinPrice(e) === 0;
+export function effectiveMinPrice(e: EventRow, gender: Gender = "any"): number | null {
+  const { early, normal } = effectivePrices(e, gender);
+  if (early != null) return early;
+  return normal;
+}
+
+export function isFree(e: EventRow, gender: Gender = "any"): boolean {
+  return effectiveMinPrice(e, gender) === 0;
 }
 
 /** Compact price for cards: "Free", "18€", "7–15€". */
-export function priceLabel(e: EventRow): string {  const early = e.price_early;
-  const normal = e.price_normal;
+export function priceLabel(e: EventRow, gender: Gender = "any"): string {
+  const { early, normal } = effectivePrices(e, gender);
   if (early == null && normal == null) return "—";
   if (early === 0) return "Free";
   if (early == null) return `${normal}€`;
@@ -120,10 +142,17 @@ export interface Filters {
   genres: Set<string>;
   priceBuckets: Set<PriceBucketId>;
   sources: Set<string>;
+  gender: Gender;
+}
+
+export function emptyFilters(): Filters {
+  return { genres: new Set(), priceBuckets: new Set(), sources: new Set(), gender: "any" };
 }
 
 export function activeFilterCount(f: Filters): number {
-  return f.genres.size + f.priceBuckets.size + f.sources.size;
+  return (
+    f.genres.size + f.priceBuckets.size + f.sources.size + (f.gender === "any" ? 0 : 1)
+  );
 }
 
 export function applyFilters(events: EventRow[], f: Filters): EventRow[] {
@@ -132,7 +161,7 @@ export function applyFilters(events: EventRow[], f: Filters): EventRow[] {
     if (f.sources.size > 0 && !f.sources.has(e.source)) return false;
     if (f.genres.size > 0 && !e.genres.some((g) => f.genres.has(g))) return false;
     if (f.priceBuckets.size > 0) {
-      const min = effectiveMinPrice(e);
+      const min = effectiveMinPrice(e, f.gender);
       if (min == null) return false;
       if (![...f.priceBuckets].some((id) => PRICE_BUCKETS.find((b) => b.id === id)!.test(min))) {
         return false;

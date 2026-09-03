@@ -26,7 +26,7 @@ export async function fetchUpcomingEvents(): Promise<EventRow[]> {
   const { data, error } = await getSupabase()
     .from("events")
     .select(
-      "id,source,external_id,title,description,starts_at,ends_at,url,image_url,venue_name,venue_address,gmaps_url,city,genres,price_early,price_normal,tickets_sale_at,tickets_sale_note,currency",
+      "id,source,external_id,title,description,starts_at,ends_at,url,image_url,venue_name,venue_address,gmaps_url,city,genres,price_early,price_normal,price_early_male,price_normal_male,price_early_female,price_normal_female,tickets_sale_at,tickets_sale_note,currency",
     )
     .gte("starts_at", since)
     .order("starts_at", { ascending: true })

@@ -4,10 +4,18 @@ import Image from "next/image";
 import { motion } from "motion/react";
 import { ClockIcon, MapPinIcon } from "lucide-react";
 
-import { priceLabel, sourceMeta, timeLabel, type EventRow } from "@/lib/events";
+import { priceLabel, sourceMeta, timeLabel, type EventRow, type Gender } from "@/lib/events";
 
 /** Agenda card for one event; taps open the detail sheet. */
-export function EventCard({ event, onOpen }: { event: EventRow; onOpen: () => void }) {
+export function EventCard({
+  event,
+  gender,
+  onOpen,
+}: {
+  event: EventRow;
+  gender: Gender;
+  onOpen: () => void;
+}) {
   const source = sourceMeta(event.source);
 
   return (
@@ -53,7 +61,7 @@ export function EventCard({ event, onOpen }: { event: EventRow; onOpen: () => vo
                 : "bg-primary/15 text-primary"
             }`}
           >
-            {priceLabel(event)}
+            {priceLabel(event, gender)}
           </span>
         </div>
 

@@ -13,12 +13,20 @@ import {
 } from "@/components/ui/sheet";
 import {
   applyFilters,
+  emptyFilters,
   PRICE_BUCKETS,
   sourceMeta,
   type EventRow,
   type Filters,
+  type Gender,
   type PriceBucketId,
 } from "@/lib/events";
+
+const GENDERS: Array<{ id: Gender; label: string }> = [
+  { id: "any", label: "Everyone" },
+  { id: "female", label: "Women" },
+  { id: "male", label: "Men" },
+];
 
 function Chip({
   active,
@@ -81,8 +89,7 @@ export function FilterSheet({
     return next;
   };
 
-  const reset = () =>
-    onFiltersChange({ genres: new Set(), priceBuckets: new Set(), sources: new Set() });
+  const reset = () => onFiltersChange(emptyFilters());
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -97,6 +104,26 @@ export function FilterSheet({
         </SheetHeader>
 
         <div className="space-y-6 px-5 pt-2 pb-4">
+          <section>
+            <h3 className="mb-2.5 text-xs font-semibold tracking-wider text-muted-foreground uppercase">
+              Prices for
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              {GENDERS.map((g) => (
+                <Chip
+                  key={g.id}
+                  active={filters.gender === g.id}
+                  onClick={() => onFiltersChange({ ...filters, gender: g.id })}
+                >
+                  {g.label}
+                </Chip>
+              ))}
+            </div>
+            <p className="mt-2 text-xs text-muted-foreground">
+              Guest-list offers can differ by gender (e.g. “chicas gratis” nights).
+            </p>
+          </section>
+
           <section>
             <h3 className="mb-2.5 text-xs font-semibold tracking-wider text-muted-foreground uppercase">
               Price
