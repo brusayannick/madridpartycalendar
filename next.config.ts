@@ -17,6 +17,9 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "app.whan.es" },
       // EventUpp (ESN UPM) event images.
       { protocol: "https", hostname: "api.eventupp.eu" },
+      // Fourvenues (Erasmus Touch) event images.
+      { protocol: "https", hostname: "fourvenues.com" },
+      { protocol: "https", hostname: "d72sklgi05fbu.cloudfront.net" },
     ],
   },
 };

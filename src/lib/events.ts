@@ -35,6 +35,7 @@ export const SOURCE_META: Record<string, { label: string; dot: string }> = {
   erasmusmadrid: { label: "Erasmus Madrid", dot: "#fb7185" },
   esnupm: { label: "ESN UPM", dot: "#fbbf24" },
   whan: { label: "Whan", dot: "#34d399" },
+  fourvenues_erasmustouch: { label: "Erasmus Touch", dot: "#60a5fa" },
 };
 
 export function sourceMeta(source: string) {

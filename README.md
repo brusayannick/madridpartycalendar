@@ -16,6 +16,7 @@ multiple sources — club nights, pubcrawls, pool parties — in one clean app.
 | Erasmus Madrid | <https://erasmusmadrid.org/events/> | The Events Calendar REST API + event pages for ticket tiers |
 | ESN UPM | <https://esnupm.org/es/eventos> | EventUpp API (the Drupal site embeds eventupp.eu) |
 | Whan | <https://app.whan.es/explore> | Whan public explore API (paginated — replaces the site's infinite scroll) |
+| Erasmus Touch | <https://site.fourvenues.com/en/erasmustouch/events> | Fourvenues API with the site's public token (Madrid-filtered — the microsite also sells other cities) |
 
 Each event stores: date, start/end time, early-bird & normal price (VIP/table
 tiers filtered out), ticket-sale start when announced, ticket URL, genres,

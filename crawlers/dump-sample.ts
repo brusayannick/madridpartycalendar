@@ -10,6 +10,7 @@ import { erasmusMadrid } from "./sites/erasmusmadrid";
 import { nightlifeMadrid, pattFirstCircle } from "./sites/patt";
 import { esnUpm } from "./sites/eventupp";
 import { whan } from "./sites/whan";
+import { fourvenuesErasmusTouch } from "./sites/fourvenues";
 import { dedupeAcrossSources } from "./lib/dedupe";
 import { finalizeEvents } from "./lib/finalize";
 import type { CrawlerEvent } from "./lib/types";
@@ -20,7 +21,7 @@ loadEnv({ path: ".env", quiet: true });
 const out = process.argv[2] ?? "src/lib/sample-events.json";
 
 async function main() {
-  const crawlers = [nightlifeMadrid, pattFirstCircle, erasmusMadrid, esnUpm, whan];
+  const crawlers = [nightlifeMadrid, pattFirstCircle, erasmusMadrid, esnUpm, whan, fourvenuesErasmusTouch];
   const collected: CrawlerEvent[] = [];
   for (const crawler of crawlers) {
     const events = finalizeEvents(await crawler.run());

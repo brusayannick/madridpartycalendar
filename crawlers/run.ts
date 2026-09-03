@@ -12,6 +12,7 @@ import { erasmusMadrid } from "./sites/erasmusmadrid";
 import { nightlifeMadrid, pattFirstCircle } from "./sites/patt";
 import { esnUpm } from "./sites/eventupp";
 import { whan } from "./sites/whan";
+import { fourvenuesErasmusTouch } from "./sites/fourvenues";
 import { dedupeAcrossSources } from "./lib/dedupe";
 import { finalizeEvents } from "./lib/finalize";
 import { deleteEvents, prunePastEvents, upsertEvents } from "./lib/store";
@@ -37,7 +38,14 @@ function loadEnvFiles(paths: string[]): void {
 
 loadEnvFiles([".env", ".env.local"]);
 
-const CRAWLERS: SiteCrawler[] = [nightlifeMadrid, pattFirstCircle, erasmusMadrid, esnUpm, whan];
+const CRAWLERS: SiteCrawler[] = [
+  nightlifeMadrid,
+  pattFirstCircle,
+  erasmusMadrid,
+  esnUpm,
+  whan,
+  fourvenuesErasmusTouch,
+];
 
 function parseArgs(argv: string[]) {
   const args: { site?: string; dry: boolean; prune: boolean } = { dry: false, prune: false };
