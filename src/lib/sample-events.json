@@ -227,31 +227,6 @@
     "currency": "EUR"
   },
   {
-    "id": "patt_firstcircle-6a26c3ece05a38b6da7ea107",
-    "source": "patt_firstcircle",
-    "external_id": "6a26c3ece05a38b6da7ea107",
-    "title": "Houdinni x First Circle",
-    "description": "Laissez Faire at Houdinni is where rules don’t exist and freedom takes over. Step into Madrid’s newest high-end club in the Golden Mile and embrace the night with no limits. Afro and commercial house set the tone while the city’s cosmopolitan elite come together for a celebration without boundaries.",
-    "starts_at": "2026-09-03T21:59:00.000Z",
-    "ends_at": "2026-09-04T03:00:00.000Z",
-    "url": "https://events.patt.club/pass/6a26c3ece05a38b6da7ea107?handle=FirstCircle",
-    "image_url": "https://everywherestorage.blob.core.windows.net/eventsimages/HOUDINNI-Laissez%20Faire%20Wednesday%20x%20Houdinni-2026-09-02T21%3A59%3A00.000Z60eb8a40-633d-11f1-9655-8fa5186f2e30.webp",
-    "venue_name": "HOUDINNI",
-    "venue_address": null,
-    "gmaps_url": "https://www.google.com/maps/search/?api=1&query=HOUDINNI%2C%20Madrid",
-    "city": "Madrid",
-    "genres": [
-      "Afro House",
-      "Latin House",
-      "Commercial House"
-    ],
-    "price_early": 20,
-    "price_normal": 25,
-    "tickets_sale_at": "2026-08-07T20:00:00.000Z",
-    "tickets_sale_note": null,
-    "currency": "EUR"
-  },
-  {
     "id": "whan-event_6a8b669a47636|2026-09-03",
     "source": "whan",
     "external_id": "event_6a8b669a47636|2026-09-03",
@@ -331,7 +306,7 @@
     "genres": [],
     "price_early": 30,
     "price_normal": 50,
-    "tickets_sale_at": "2026-08-15T10:00:07.000Z",
+    "tickets_sale_at": "2026-08-15T12:00:07.000Z",
     "tickets_sale_note": null,
     "currency": "EUR"
   },
