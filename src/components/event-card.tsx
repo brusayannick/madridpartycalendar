@@ -34,7 +34,7 @@ export function EventCard({
       whileHover={{ y: -3 }}
       whileTap={{ scale: 0.98 }}
       onClick={onOpen}
-      className="group hairline shadow-card flex w-full gap-3 rounded-xl bg-card p-3 text-left transition-[border-color,box-shadow] duration-300 outline-none hover:border-foreground/35 focus-visible:ring-2 focus-visible:ring-ring"
+      className="group hairline shadow-card flex w-full min-w-0 gap-3 overflow-hidden rounded-xl bg-card p-3 text-left transition-[border-color,box-shadow] duration-300 outline-none hover:border-foreground/35 focus-visible:ring-2 focus-visible:ring-ring"
     >
       <div className="relative size-20 shrink-0 overflow-hidden rounded-lg sm:size-24">
         {event.image_url ? (
@@ -80,12 +80,12 @@ export function EventCard({
           </span>
         </div>
 
-        <h3 className="mt-1 line-clamp-2 text-[15px] leading-snug font-normal">
+        <h3 className="mt-1 line-clamp-2 text-[15px] leading-snug font-normal break-words">
           {event.title}
         </h3>
 
         {event.venue_name && (
-          <span className="mt-0.5 inline-flex items-center gap-1 truncate text-xs font-light text-muted-foreground">
+          <span className="mt-0.5 inline-flex min-w-0 items-center gap-1 truncate text-xs font-light text-muted-foreground">
             <MapPinIcon className="size-3 shrink-0" strokeWidth={1.5} />
             {event.venue_name}
           </span>
@@ -105,7 +105,7 @@ export function EventCard({
               +{event.genres.length - 2}
             </span>
           )}
-          <span className="mono-label ml-auto inline-flex items-center gap-1.5 text-muted-foreground/80">
+          <span className="mono-label ml-auto inline-flex shrink-0 items-center gap-1.5 text-muted-foreground/80">
             <span className="size-1.5 rounded-full" style={{ background: source.dot }} />
             {source.label}
           </span>
