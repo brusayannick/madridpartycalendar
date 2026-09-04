@@ -8,9 +8,34 @@ import type { CrawlerEvent } from "./types";
 import { resolvePrices } from "./priceTiers";
 import { normalizeGenres, inferGenres } from "./genres";
 import { gmapsUrl } from "./gmaps";
-import { coordsFromGmapsUrl, geocodeVenue } from "./geocode";
+import {
+  coordsFromGmapsUrl,
+  coordsFromShortGmapsUrl,
+  geocodeVenue,
+  looksLikeAddress,
+} from "./geocode";
 
 const MADRID_RE = /\bmadrid\b/i;
+
+/**
+ * Pull a street address out of free-text descriptions. Providers often put
+ * the real address in the description ("📍 WHERE: C. de las Huertas, 41",
+ * "C. de Coslada, 14, Salamanca, 28028 Madrid") while venueName holds a
+ * nickname. Returns the address fragment or undefined.
+ */
+export function extractAddressFromText(text: string | undefined): string | undefined {
+  if (!text) return undefined;
+  // Explicit "WHERE …" line, up to a newline.
+  const where = text.match(/(?:WHERE|DÓNDE|DONDE|LUGAR)[:\s]+([^\n]{8,120})/i);
+  if (where && looksLikeAddress(where[1])) return where[1].trim().replace(/[.,;]+$/, "");
+  // Any fragment with a Madrid postcode.
+  const postcode = text.match(/((?:Calle|C\.|Avda?\.?|Plaza|Paseo|Travesía)[^,\n]{0,60},\s*\d[^,\n]{0,40}280\d\d[^,\n]{0,40})/i);
+  if (postcode) return postcode[1].trim();
+  // Street + number without postcode ("C. de las Huertas, 41").
+  const street = text.match(/((?:Calle|C\.|Avda?\.?|Plaza|Paseo)\s+[^\n,]{3,50},\s*\d+[^\n,]{0,20})/i);
+  if (street) return street[1].trim();
+  return undefined;
+}
 
 function isMadrid(event: CrawlerEvent): boolean {
   if (!event.city) return true; // Source is Madrid-focused; only reject explicit elsewhere.
@@ -39,12 +64,16 @@ export async function finalizeEvents(events: CrawlerEvent[]): Promise<CrawlerEve
     if (genres.length === 0) genres = inferGenres(e.title, e.description);
 
     // Coordinates: prefer exact ones from the source (e.g. Whan gmaps link),
-    // otherwise geocode the venue once (cached).
+    // otherwise resolve short links, otherwise geocode the venue once (cached).
+    // venueAddress falls back to an address parsed from the description —
+    // several providers keep nicknames in `location` and the street in text.
     let { latitude, longitude } = e;
+    const venueAddress = e.venueAddress ?? extractAddressFromText(e.description);
     if (latitude == null || longitude == null) {
       const coords =
         coordsFromGmapsUrl(e.gmapsUrl) ??
-        (await geocodeVenue(e.venueName, e.venueAddress));
+        (await coordsFromShortGmapsUrl(e.gmapsUrl)) ??
+        (await geocodeVenue(e.venueName, venueAddress));
       if (coords) {
         latitude = coords.lat;
         longitude = coords.lng;
@@ -54,6 +83,7 @@ export async function finalizeEvents(events: CrawlerEvent[]): Promise<CrawlerEve
     out.push({
       ...e,
       city: "Madrid",
+      venueAddress: venueAddress ?? e.venueAddress,
       priceEarly: prices.early,
       priceNormal: prices.normal,
       priceEarlyMale: prices.maleEarly,
