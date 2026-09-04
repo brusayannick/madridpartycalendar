@@ -42,3 +42,6 @@ next-env.d.ts
 
 # ZCode session data
 .zcode/
+
+# Geocode cache
+crawlers/.geocache.json

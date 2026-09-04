@@ -89,7 +89,7 @@ async function main() {
     console.log(`\n▶ ${crawler.label} (${crawler.id})`);
     try {
       const raw = await crawler.run();
-      const events = finalizeEvents(raw);
+      const events = await finalizeEvents(raw);
       collected.push(...events);
       console.log(`  ${raw.length} fetched, ${events.length} after filters (Madrid, future, valid)`);
     } catch (error) {

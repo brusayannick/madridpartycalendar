@@ -24,7 +24,7 @@ async function main() {
   const crawlers = [nightlifeMadrid, pattFirstCircle, erasmusMadrid, esnUpm, whan, fourvenuesErasmusTouch];
   const collected: CrawlerEvent[] = [];
   for (const crawler of crawlers) {
-    const events = finalizeEvents(await crawler.run());
+    const events = await finalizeEvents(await crawler.run());
     console.log(`${crawler.id}: ${events.length} events`);
     collected.push(...events);
   }
@@ -45,6 +45,8 @@ async function main() {
     venue_name: e.venueName ?? null,
     venue_address: e.venueAddress ?? null,
     gmaps_url: e.gmapsUrl ?? null,
+    latitude: e.latitude ?? null,
+    longitude: e.longitude ?? null,
     city: e.city ?? "Madrid",
     genres: e.genres,
     price_early: e.priceEarly ?? null,

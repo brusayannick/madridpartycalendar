@@ -1,9 +1,9 @@
 "use client";
 
 import { useMemo } from "react";
-import { motion } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
+import { CheckIcon } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
 import {
   Sheet,
   SheetContent,
@@ -28,6 +28,7 @@ const GENDERS: Array<{ id: Gender; label: string }> = [
   { id: "male", label: "Men" },
 ];
 
+/** tacto chip: outlined pill → ink fill with a spring + check pop. */
 function Chip({
   active,
   onClick,
@@ -40,17 +41,45 @@ function Chip({
   return (
     <motion.button
       layout
-      whileTap={{ scale: 0.94 }}
+      whileTap={{ scale: 0.93 }}
+      whileHover={{ y: -1 }}
+      transition={{ type: "spring", stiffness: 500, damping: 30 }}
       onClick={onClick}
       aria-pressed={active}
-      className={`rounded-full border px-3 py-1.5 text-sm font-medium transition-colors ${
+      className={`hairline relative rounded-full px-3.5 py-1.5 text-[13px] font-light transition-colors duration-300 ${
         active
-          ? "border-primary/60 bg-primary/15 text-primary"
-          : "border-border/70 text-muted-foreground hover:border-primary/30 hover:text-foreground"
+          ? "bg-primary text-primary-foreground"
+          : "bg-transparent text-muted-foreground hover:border-foreground/40 hover:text-foreground"
       }`}
     >
-      {children}
+      <span className="inline-flex items-center gap-1.5">
+        <AnimatePresence initial={false}>
+          {active && (
+            <motion.span
+              key="check"
+              initial={{ scale: 0, width: 0, opacity: 0 }}
+              animate={{ scale: 1, width: "auto", opacity: 1 }}
+              exit={{ scale: 0, width: 0, opacity: 0 }}
+              transition={{ type: "spring", stiffness: 600, damping: 30 }}
+              className="overflow-hidden"
+            >
+              <CheckIcon className="size-3" strokeWidth={2} />
+            </motion.span>
+          )}
+        </AnimatePresence>
+        {children}
+      </span>
     </motion.button>
+  );
+}
+
+function Section({ title, hint, children }: { title: string; hint?: string; children: React.ReactNode }) {
+  return (
+    <section>
+      <h3 className="mono-label mb-3 text-muted-foreground">{title}</h3>
+      {children}
+      {hint && <p className="mt-2.5 text-xs leading-relaxed font-light text-muted-foreground">{hint}</p>}
+    </section>
   );
 }
 
@@ -95,19 +124,19 @@ export function FilterSheet({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="bottom"
-        className="inset-x-0 mx-auto max-h-[85dvh] w-full max-w-3xl overflow-y-auto rounded-t-3xl border-border/70"
+        className="inset-x-0 mx-auto max-h-[85dvh] w-full max-w-3xl overflow-y-auto rounded-t-2xl"
       >
         <div className="mx-auto mt-2.5 h-1 w-10 rounded-full bg-muted-foreground/30" />
         <SheetHeader className="px-5 pt-3">
-          <SheetTitle>Filters</SheetTitle>
+          <SheetTitle className="font-display text-2xl tracking-[-0.02em]">Filters</SheetTitle>
           <SheetDescription className="sr-only">Filter events by price, genre and source</SheetDescription>
         </SheetHeader>
 
-        <div className="space-y-6 px-5 pt-2 pb-4">
-          <section>
-            <h3 className="mb-2.5 text-xs font-semibold tracking-wider text-muted-foreground uppercase">
-              Prices for
-            </h3>
+        <div className="space-y-6 px-5 pt-3 pb-4">
+          <Section
+            title="Prices for"
+            hint="Guest-list offers can differ by gender (e.g. “chicas gratis” nights)."
+          >
             <div className="flex flex-wrap gap-2">
               {GENDERS.map((g) => (
                 <Chip
@@ -119,15 +148,9 @@ export function FilterSheet({
                 </Chip>
               ))}
             </div>
-            <p className="mt-2 text-xs text-muted-foreground">
-              Guest-list offers can differ by gender (e.g. “chicas gratis” nights).
-            </p>
-          </section>
+          </Section>
 
-          <section>
-            <h3 className="mb-2.5 text-xs font-semibold tracking-wider text-muted-foreground uppercase">
-              Price
-            </h3>
+          <Section title="Price">
             <div className="flex flex-wrap gap-2">
               {PRICE_BUCKETS.map((bucket) => (
                 <Chip
@@ -144,12 +167,9 @@ export function FilterSheet({
                 </Chip>
               ))}
             </div>
-          </section>
+          </Section>
 
-          <section>
-            <h3 className="mb-2.5 text-xs font-semibold tracking-wider text-muted-foreground uppercase">
-              Genres
-            </h3>
+          <Section title="Genres">
             <div className="flex max-h-56 flex-wrap gap-2 overflow-y-auto">
               {genres.map((genre) => (
                 <Chip
@@ -163,12 +183,9 @@ export function FilterSheet({
                 </Chip>
               ))}
             </div>
-          </section>
+          </Section>
 
-          <section>
-            <h3 className="mb-2.5 text-xs font-semibold tracking-wider text-muted-foreground uppercase">
-              Source
-            </h3>
+          <Section title="Source">
             <div className="flex flex-wrap gap-2">
               {sources.map((source) => {
                 const meta = sourceMeta(source);
@@ -188,16 +205,26 @@ export function FilterSheet({
                 );
               })}
             </div>
-          </section>
+          </Section>
         </div>
 
-        <div className="pb-safe sticky bottom-0 flex gap-2 border-t border-border/60 bg-popover/95 px-5 py-3 backdrop-blur">
-          <Button variant="ghost" onClick={reset} className="flex-1">
+        <div className="pb-safe sticky bottom-0 flex gap-2 border-t border-border bg-popover/95 px-5 py-3 backdrop-blur">
+          <motion.button
+            whileTap={{ scale: 0.96 }}
+            transition={{ type: "spring", stiffness: 500, damping: 26 }}
+            onClick={reset}
+            className="hairline flex-1 rounded-lg bg-background py-2.5 text-sm font-light transition-colors duration-300 hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          >
             Reset
-          </Button>
-          <Button onClick={() => onOpenChange(false)} className="flex-[2]">
+          </motion.button>
+          <motion.button
+            whileTap={{ scale: 0.97 }}
+            transition={{ type: "spring", stiffness: 500, damping: 26 }}
+            onClick={() => onOpenChange(false)}
+            className="flex-[2] rounded-lg bg-primary py-2.5 text-sm font-normal text-primary-foreground transition-transform focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          >
             Show {resultCount} event{resultCount === 1 ? "" : "s"}
-          </Button>
+          </motion.button>
         </div>
       </SheetContent>
     </Sheet>

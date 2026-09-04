@@ -39,6 +39,8 @@ function toRow(e: CrawlerEvent) {
     venue_name: e.venueName ?? null,
     venue_address: e.venueAddress ?? null,
     gmaps_url: e.gmapsUrl ?? null,
+    latitude: e.latitude ?? null,
+    longitude: e.longitude ?? null,
     city: e.city ?? "Madrid",
     genres: e.genres,
     price_early: e.priceEarly ?? null,

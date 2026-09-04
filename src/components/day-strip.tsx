@@ -7,9 +7,8 @@ type ByDay = Map<string, import("@/lib/events").EventRow[]>;
 
 const WEEKDAY = new Intl.DateTimeFormat("en-GB", { weekday: "short", timeZone: "UTC" });
 const DAY_NUM = new Intl.DateTimeFormat("en-GB", { day: "numeric", timeZone: "UTC" });
-const MONTH = new Intl.DateTimeFormat("en-GB", { month: "short", timeZone: "UTC" });
 
-/** Sticky horizontal day picker with event-count dots; today outlined. */
+/** Sticky horizontal day picker — tacto-style outlined pills with an ink fill. */
 export function DayStrip({
   days,
   byDay,
@@ -31,7 +30,7 @@ export function DayStrip({
   }, [selectedKey]);
 
   return (
-    <div className="no-scrollbar overflow-x-auto scroll-smooth px-3 pb-2" ref={scroller}>
+    <div className="no-scrollbar overflow-x-auto scroll-smooth px-4 pb-3" ref={scroller}>
       <div className="flex w-max gap-1.5">
         {days.map((key) => {
           const date = new Date(`${key}T12:00:00Z`);
@@ -39,48 +38,61 @@ export function DayStrip({
           const isSelected = key === selectedKey;
           const isToday = key === today;
           return (
-            <button
+            <motion.button
               key={key}
               data-day={key}
               onClick={() => onSelect(key)}
+              whileTap={{ scale: 0.92 }}
+              transition={{ type: "spring", stiffness: 500, damping: 26 }}
               aria-pressed={isSelected}
-              aria-label={`${WEEKDAY.format(date)} ${DAY_NUM.format(date)} ${MONTH.format(date)}${count ? `, ${count} events` : ""}`}
-              className="relative flex w-[3.4rem] shrink-0 flex-col items-center gap-0.5 rounded-2xl px-2 py-2 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              aria-label={`${WEEKDAY.format(date)} ${date.getDate()}${count ? `, ${count} events` : ""}`}
+              className="relative flex h-16 w-14 shrink-0 flex-col items-center justify-center gap-1 rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               {isSelected && (
                 <motion.span
                   layoutId="day-pill"
-                  className="absolute inset-0 rounded-2xl bg-primary/15 ring-1 ring-primary/45"
-                  transition={{ type: "spring", stiffness: 500, damping: 40 }}
+                  className="hairline absolute inset-0 rounded-lg bg-primary"
+                  transition={{ type: "spring", stiffness: 480, damping: 38 }}
                 />
               )}
               <span
-                className={`relative text-[10px] font-medium tracking-wider uppercase ${
-                  isSelected ? "text-primary" : "text-muted-foreground"
+                className={`mono-label relative transition-colors duration-300 ${
+                  isSelected ? "text-primary-foreground/70" : "text-muted-foreground"
                 }`}
               >
                 {WEEKDAY.format(date)}
               </span>
               <span
-                className={`relative text-base leading-none font-semibold tabular-nums ${
-                  isSelected ? "text-foreground" : isToday ? "text-primary" : "text-foreground/80"
+                className={`relative text-[15px] leading-none font-light tabular-nums transition-colors duration-300 ${
+                  isSelected ? "text-primary-foreground" : "text-foreground"
                 }`}
               >
                 {DAY_NUM.format(date)}
               </span>
               <span className="relative flex h-1.5 items-center gap-0.5" aria-hidden>
-                {count === 0 ? (
+                {isToday ? (
+                  <motion.span
+                    key="today"
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    className={`size-1.5 rounded-full ${
+                      isSelected ? "bg-sun" : "bg-flame"
+                    }`}
+                  />
+                ) : count === 0 ? (
                   <span className="size-1 rounded-full bg-transparent" />
                 ) : (
                   Array.from({ length: Math.min(count, 3) }).map((_, i) => (
                     <span
                       key={i}
-                      className={`size-1 rounded-full ${isSelected ? "bg-primary" : "bg-primary/50"}`}
+                      className={`size-1 rounded-full ${
+                        isSelected ? "bg-primary-foreground/60" : "bg-muted-foreground/40"
+                      }`}
                     />
                   ))
                 )}
               </span>
-            </button>
+            </motion.button>
           );
         })}
       </div>

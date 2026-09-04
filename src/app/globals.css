@@ -7,9 +7,9 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
+  --font-sans: var(--font-aspekta);
   --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-sans);
+  --font-heading: var(--font-aspekta);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -39,54 +39,103 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
+  /* tacto.ai accent scale */
+  --color-flame: var(--flame);
+  --color-mint: var(--mint);
+  --color-sea: var(--sea);
+  --color-sun: var(--sun);
+  --radius-sm: calc(var(--radius) * 0.5);
+  --radius-md: calc(var(--radius) * 0.75);
   --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
+  --radius-xl: calc(var(--radius) * 1.5);
+  --radius-2xl: calc(var(--radius) * 2);
+  --radius-3xl: calc(var(--radius) * 3);
+  --radius-4xl: calc(var(--radius) * 4);
 }
 
 /*
- * Madrid Party Calendar — forced dark, neon-night palette.
- * Violet-tinted near-black base with a neon violet primary and a cyan
- * secondary for gradients.
+ * Madrid Party Calendar — tacto.ai-inspired design language.
+ * Swiss-technical: paper-grey surfaces, ink text, hairline borders,
+ * light Aspekta type, orange flame accent. Dark mode = tacto's black
+ * sections: pure ink background, paper text, inverted buttons.
  */
-:root,
+:root {
+  --background: #f5f5f5;
+  --foreground: #0a0a0a;
+  --card: #ffffff;
+  --card-foreground: #0a0a0a;
+  --popover: #ffffff;
+  --popover-foreground: #0a0a0a;
+  --primary: #0a0a0a;
+  --primary-foreground: #f5f5f5;
+  --secondary: #ffffff;
+  --secondary-foreground: #0a0a0a;
+  --muted: #ebebeb;
+  --muted-foreground: #6b6b6b;
+  --accent: #ff6414;
+  --accent-foreground: #0a0a0a;
+  --destructive: oklch(0.63 0.2 25);
+  --border: oklch(0 0 0 / 13%);
+  --input: oklch(0 0 0 / 18%);
+  --ring: oklch(0 0 0 / 28%);
+  --flame: #ff6414;
+  --mint: #2ed24f;
+  --sea: #2abfc1;
+  --sun: #ffcc14;
+  --chart-1: #ff6414;
+  --chart-2: #2ed24f;
+  --chart-3: #2abfc1;
+  --chart-4: #ffcc14;
+  --chart-5: #2170ec;
+  --radius: 0.5rem;
+  --shadow-card: 0 1px 2px oklch(0 0 0 / 4%), 0 8px 24px oklch(0 0 0 / 5%);
+  --sidebar: #ffffff;
+  --sidebar-foreground: #0a0a0a;
+  --sidebar-primary: #0a0a0a;
+  --sidebar-primary-foreground: #f5f5f5;
+  --sidebar-accent: #ebebeb;
+  --sidebar-accent-foreground: #0a0a0a;
+  --sidebar-border: oklch(0 0 0 / 13%);
+  --sidebar-ring: oklch(0 0 0 / 28%);
+}
+
 .dark {
-  --background: oklch(0.128 0.016 295);
-  --foreground: oklch(0.965 0.006 295);
-  --card: oklch(0.168 0.02 295);
-  --card-foreground: oklch(0.965 0.006 295);
-  --popover: oklch(0.185 0.022 295);
-  --popover-foreground: oklch(0.965 0.006 295);
-  --primary: oklch(0.72 0.175 306);
-  --primary-foreground: oklch(0.14 0.04 306);
-  --secondary: oklch(0.235 0.03 295);
-  --secondary-foreground: oklch(0.965 0.006 295);
-  --muted: oklch(0.215 0.025 295);
-  --muted-foreground: oklch(0.69 0.02 295);
-  --accent: oklch(0.26 0.045 306);
-  --accent-foreground: oklch(0.965 0.006 295);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 8%);
-  --input: oklch(1 0 0 / 12%);
-  --ring: oklch(0.72 0.175 306 / 60%);
-  --chart-1: oklch(0.72 0.175 306);
-  --chart-2: oklch(0.79 0.13 200);
-  --chart-3: oklch(0.7 0.16 350);
-  --chart-4: oklch(0.75 0.15 100);
-  --chart-5: oklch(0.6 0.2 150);
-  --radius: 0.75rem;
-  --sidebar: oklch(0.168 0.02 295);
-  --sidebar-foreground: oklch(0.965 0.006 295);
-  --sidebar-primary: oklch(0.72 0.175 306);
-  --sidebar-primary-foreground: oklch(0.14 0.04 306);
-  --sidebar-accent: oklch(0.26 0.045 306);
-  --sidebar-accent-foreground: oklch(0.965 0.006 295);
-  --sidebar-border: oklch(1 0 0 / 8%);
-  --sidebar-ring: oklch(0.72 0.175 306 / 60%);
+  --background: #050505;
+  --foreground: #f5f5f5;
+  --card: #0e0e0e;
+  --card-foreground: #f5f5f5;
+  --popover: #121212;
+  --popover-foreground: #f5f5f5;
+  --primary: #f5f5f5;
+  --primary-foreground: #0a0a0a;
+  --secondary: #161616;
+  --secondary-foreground: #f5f5f5;
+  --muted: #1c1c1c;
+  --muted-foreground: #a6a6a6;
+  --accent: #ff6414;
+  --accent-foreground: #0a0a0a;
+  --destructive: oklch(0.68 0.2 25);
+  --border: oklch(1 0 0 / 14%);
+  --input: oklch(1 0 0 / 18%);
+  --ring: oklch(1 0 0 / 30%);
+  --flame: #ff6414;
+  --mint: #2ed24f;
+  --sea: #2abfc1;
+  --sun: #ffcc14;
+  --chart-1: #ff6414;
+  --chart-2: #2ed24f;
+  --chart-3: #2abfc1;
+  --chart-4: #ffcc14;
+  --chart-5: #2170ec;
+  --shadow-card: 0 1px 2px oklch(0 0 0 / 40%), 0 12px 32px oklch(0 0 0 / 35%);
+  --sidebar: #0e0e0e;
+  --sidebar-foreground: #f5f5f5;
+  --sidebar-primary: #f5f5f5;
+  --sidebar-primary-foreground: #0a0a0a;
+  --sidebar-accent: #1c1c1c;
+  --sidebar-accent-foreground: #f5f5f5;
+  --sidebar-border: oklch(1 0 0 / 14%);
+  --sidebar-ring: oklch(1 0 0 / 30%);
 }
 
 @layer base {
@@ -94,28 +143,63 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-light antialiased;
     -webkit-tap-highlight-color: transparent;
+    letter-spacing: -0.011em;
   }
   html {
     @apply font-sans;
     scrollbar-gutter: stable;
   }
+  ::selection {
+    background: var(--flame);
+    color: #0a0a0a;
+  }
+  /* Smooth palette cross-fade when toggling themes. */
+  body,
+  header,
+  [data-slot="card"],
+  [data-slot="sheet-content"],
+  [data-slot="popover-content"] {
+    transition: background-color 0.45s ease, border-color 0.45s ease, color 0.45s ease;
+  }
 }
 
 @layer utilities {
-  /* Neon gradient text (logo, accents). */
-  .text-neon-gradient {
-    background: linear-gradient(100deg, oklch(0.78 0.16 306), oklch(0.82 0.13 200));
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+  /* Extra-light display type for big headings (tacto hero style). */
+  .font-display {
+    font-weight: 250;
+    letter-spacing: -0.03em;
+  }
+  /* Mono micro-label: uppercase, tracked — tacto's section eyebrows. */
+  .mono-label {
+    font-family: var(--font-geist-mono), monospace;
+    font-size: 0.625rem;
+    font-weight: 400;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+  /* Orange → sea gradient wordmark (logo dot accents). */
+  .text-flame {
+    color: var(--flame);
+  }
+  .bg-flame {
+    background: var(--flame);
+  }
+  /* Hairline card used across the swiss grid look. */
+  .hairline {
+    border-width: 1px;
+    border-style: solid;
+    border-color: var(--border);
+  }
+  .shadow-card {
+    box-shadow: var(--shadow-card);
   }
   /* Frosted sticky header. */
   .glass {
-    background: color-mix(in oklch, var(--background) 72%, transparent);
-    backdrop-filter: blur(16px) saturate(1.4);
-    -webkit-backdrop-filter: blur(16px) saturate(1.4);
+    background: color-mix(in oklab, var(--background) 78%, transparent);
+    backdrop-filter: blur(18px) saturate(1.3);
+    -webkit-backdrop-filter: blur(18px) saturate(1.3);
   }
   /* Hide scrollbars on the horizontal day strip. */
   .no-scrollbar {
@@ -128,4 +212,59 @@
   .pb-safe {
     padding-bottom: max(env(safe-area-inset-bottom), 0.75rem);
   }
+  /* Underline sweep for text links — tacto nav style. */
+  .link-sweep {
+    background-image: linear-gradient(currentColor, currentColor);
+    background-size: 0% 1px;
+    background-position: 0 100%;
+    background-repeat: no-repeat;
+    transition: background-size 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .link-sweep:hover {
+    background-size: 100% 1px;
+  }
 }
+
+/* ------------------------------------------------------------------ */
+/* MapLibre pins — tacto chip pins: accent fill, ink text, mono label. */
+.mpc-marker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 26px;
+  height: 26px;
+  padding: 0 7px;
+  border: 1px solid rgba(0, 0, 0, 0.22);
+  border-radius: 8px 8px 8px 2px;
+  background: var(--marker-color, var(--flame));
+  color: #0a0a0a;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.28);
+  cursor: pointer;
+  transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.25s ease;
+}
+.mpc-marker span {
+  display: block;
+  line-height: 1;
+}
+.mpc-marker:hover,
+.mpc-marker:focus-visible {
+  transform: translateY(-3px) scale(1.06);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.35);
+  outline: none;
+}
+.mpc-marker:active {
+  transform: translateY(-1px) scale(0.98);
+}
+/* Keep the compact attribution readable in both themes. */
+.maplibregl-ctrl-attrib {
+  background: color-mix(in oklab, var(--background) 82%, transparent) !important;
+  border-radius: 6px 0 0 0;
+}
+.maplibregl-ctrl-attrib a {
+  color: var(--muted-foreground) !important;
+}
+

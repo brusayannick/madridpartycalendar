@@ -13,6 +13,8 @@ export interface EventRow {
   venue_name: string | null;
   venue_address: string | null;
   gmaps_url: string | null;
+  latitude: number | null;
+  longitude: number | null;
   city: string;
   genres: string[];
   price_early: number | null;
@@ -30,16 +32,17 @@ export interface EventRow {
 export type Gender = "any" | "female" | "male";
 
 export const SOURCE_META: Record<string, { label: string; dot: string }> = {
-  nightlifemadrid: { label: "Nightlife Madrid", dot: "#22d3ee" },
-  patt_firstcircle: { label: "First Circle", dot: "#a78bfa" },
-  erasmusmadrid: { label: "Erasmus Madrid", dot: "#fb7185" },
-  esnupm: { label: "ESN UPM", dot: "#fbbf24" },
-  whan: { label: "Whan", dot: "#34d399" },
-  fourvenues_erasmustouch: { label: "Erasmus Touch", dot: "#60a5fa" },
+  // tacto.ai accent family: flame / sea / blue / sun / mint / violet.
+  nightlifemadrid: { label: "Nightlife Madrid", dot: "#2abfc1" },
+  patt_firstcircle: { label: "First Circle", dot: "#2170ec" },
+  erasmusmadrid: { label: "Erasmus Madrid", dot: "#ff6414" },
+  esnupm: { label: "ESN UPM", dot: "#ffcc14" },
+  whan: { label: "Whan", dot: "#2ed24f" },
+  fourvenues_erasmustouch: { label: "Erasmus Touch", dot: "#8a63f7" },
 };
 
 export function sourceMeta(source: string) {
-  return SOURCE_META[source] ?? { label: source, dot: "#94a3b8" };
+  return SOURCE_META[source] ?? { label: source, dot: "#8a8a8a" };
 }
 
 const TZ = "Europe/Madrid";

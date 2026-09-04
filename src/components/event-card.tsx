@@ -6,41 +6,49 @@ import { ClockIcon, MapPinIcon } from "lucide-react";
 
 import { priceLabel, sourceMeta, timeLabel, type EventRow, type Gender } from "@/lib/events";
 
-/** Agenda card for one event; taps open the detail sheet. */
+/** Agenda card for one event; taps open the detail sheet. tacto-style hairline card. */
 export function EventCard({
   event,
   gender,
+  index,
   onOpen,
 }: {
   event: EventRow;
   gender: Gender;
+  index: number;
   onOpen: () => void;
 }) {
   const source = sourceMeta(event.source);
+  const free = priceLabel(event) === "Free";
 
   return (
     <motion.button
-      layout
-      variants={{
-        hidden: { opacity: 0, y: 16, scale: 0.98 },
-        show: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.25, ease: "easeOut" } },
+      initial={{ opacity: 0, y: 22, scale: 0.985 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{
+        type: "spring",
+        stiffness: 380,
+        damping: 32,
+        delay: Math.min(index * 0.05, 0.35),
       }}
-      whileTap={{ scale: 0.97 }}
+      whileHover={{ y: -3 }}
+      whileTap={{ scale: 0.98 }}
       onClick={onOpen}
-      className="group flex w-full gap-3 rounded-2xl border border-border/70 bg-card/80 p-3 text-left shadow-sm outline-none transition-colors hover:border-primary/40 focus-visible:ring-2 focus-visible:ring-ring"
+      className="group hairline shadow-card flex w-full gap-3 rounded-xl bg-card p-3 text-left transition-[border-color,box-shadow] duration-300 outline-none hover:border-foreground/35 focus-visible:ring-2 focus-visible:ring-ring"
     >
-      <div className="relative size-20 shrink-0 overflow-hidden rounded-xl sm:size-24">
+      <div className="relative size-20 shrink-0 overflow-hidden rounded-lg sm:size-24">
         {event.image_url ? (
           <Image
             src={event.image_url}
             alt=""
             fill
             sizes="96px"
-            className="object-cover transition-transform duration-300 group-hover:scale-105"
+            loading={index < 2 ? "eager" : undefined}
+            className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.06]"
           />
         ) : (
-          <div className="flex size-full items-center justify-center bg-gradient-to-br from-primary/25 to-secondary">
-            <span className="text-neon-gradient text-lg font-bold">
+          <div className="flex size-full items-center justify-center bg-muted">
+            <span className="mono-label text-muted-foreground">
               {event.title.slice(0, 2).toUpperCase()}
             </span>
           </div>
@@ -49,29 +57,32 @@ export function EventCard({
 
       <div className="flex min-w-0 flex-1 flex-col">
         <div className="flex items-start justify-between gap-2">
-          <span className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground">
-            <ClockIcon className="size-3.5 text-primary/80" />
+          <span className="mono-label mt-0.5 inline-flex items-center gap-1 text-muted-foreground">
+            <ClockIcon className="size-3" strokeWidth={1.5} />
             {event.starts_at ? timeLabel(event.starts_at) : ""}
             {event.ends_at ? ` – ${timeLabel(event.ends_at)}` : ""}
           </span>
-          <span
-            className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold tabular-nums ${
-              priceLabel(event) === "Free"
-                ? "bg-chart-5/15 text-chart-5"
-                : "bg-primary/15 text-primary"
-            }`}
-          >
-            {priceLabel(event, gender)}
+          <span className="mono-label flex items-center gap-2 tabular-nums">
+            <span className="text-muted-foreground/50">
+              {String(index + 1).padStart(2, "0")}
+            </span>
+            <span
+              className={`rounded-[4px] px-1.5 py-0.5 font-medium text-accent-foreground ${
+                free ? "bg-mint" : "bg-flame"
+              }`}
+            >
+              {priceLabel(event, gender)}
+            </span>
           </span>
         </div>
 
-        <h3 className="mt-0.5 line-clamp-2 text-sm leading-snug font-semibold sm:text-base">
+        <h3 className="mt-1 line-clamp-2 text-[15px] leading-snug font-normal">
           {event.title}
         </h3>
 
         {event.venue_name && (
-          <span className="mt-0.5 inline-flex items-center gap-1 truncate text-xs text-muted-foreground">
-            <MapPinIcon className="size-3.5 shrink-0 text-primary/60" />
+          <span className="mt-0.5 inline-flex items-center gap-1 truncate text-xs font-light text-muted-foreground">
+            <MapPinIcon className="size-3 shrink-0" strokeWidth={1.5} />
             {event.venue_name}
           </span>
         )}
@@ -80,15 +91,17 @@ export function EventCard({
           {event.genres.slice(0, 2).map((genre) => (
             <span
               key={genre}
-              className="rounded-full border border-border/70 px-1.5 py-px text-[10px] font-medium text-muted-foreground"
+              className="hairline rounded-full px-2 py-px text-[10px] font-light text-muted-foreground"
             >
               {genre}
             </span>
           ))}
           {event.genres.length > 2 && (
-            <span className="text-[10px] text-muted-foreground">+{event.genres.length - 2}</span>
+            <span className="text-[10px] font-light text-muted-foreground/70">
+              +{event.genres.length - 2}
+            </span>
           )}
-          <span className="ml-auto inline-flex items-center gap-1 text-[10px] tracking-wide text-muted-foreground/70 uppercase">
+          <span className="mono-label ml-auto inline-flex items-center gap-1.5 text-muted-foreground/80">
             <span className="size-1.5 rounded-full" style={{ background: source.dot }} />
             {source.label}
           </span>

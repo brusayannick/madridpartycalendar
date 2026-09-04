@@ -16,6 +16,8 @@ create table if not exists public.events (
   venue_name text,
   venue_address text,
   gmaps_url text,                          -- Google Maps search link for the venue
+  latitude numeric(9,6),                   -- venue coords for map views
+  longitude numeric(9,6),
   city text not null default 'Madrid',
   genres text[] not null default '{}',
   price_early numeric(8,2),                -- cheapest standard entry tier (0 = free entry)
@@ -47,6 +49,11 @@ create index if not exists events_genres_idx on public.events using gin (genres)
 --   add column if not exists price_normal_male numeric(8,2),
 --   add column if not exists price_early_female numeric(8,2),
 --   add column if not exists price_normal_female numeric(8,2);
+
+-- Migration for databases created before venue coordinates existed:
+-- alter table public.events
+--   add column if not exists latitude numeric(9,6),
+--   add column if not exists longitude numeric(9,6);
 
 -- Keep updated_at fresh on upserts.
 create or replace function public.touch_updated_at()

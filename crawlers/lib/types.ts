@@ -32,6 +32,9 @@ export interface CrawlerEvent {
   venueAddress?: string;
   /** Google Maps deep link; built by finalize() when missing. */
   gmapsUrl?: string;
+  /** Venue coordinates for map views; filled by finalize() via geocoding. */
+  latitude?: number;
+  longitude?: number;
   city?: string;
   genres: string[];
   /** Raw ticket tiers; resolved to prices by resolvePrices(). */
