@@ -259,9 +259,12 @@
 .mpc-marker:active {
   transform: translateY(-1px) scale(0.98);
 }
+/* Dark-mode OSM raster tiles: invert via CSS filter (light mode unfiltered). */
+.dark .maplibregl-canvas {
+  filter: grayscale(0.4) invert(0.88) hue-rotate(180deg) brightness(0.95);
+}
 /* Keep the compact attribution readable in both themes. */
-.maplibregl-ctrl-attrib {
-  background: color-mix(in oklab, var(--background) 82%, transparent) !important;
+.maplibregl-ctrl-attrib {  background: color-mix(in oklab, var(--background) 82%, transparent) !important;
   border-radius: 6px 0 0 0;
 }
 .maplibregl-ctrl-attrib a {

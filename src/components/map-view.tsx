@@ -4,8 +4,6 @@ import { useEffect, useRef } from "react";
 import { Map as MlMap, Marker } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 
-import { useTheme } from "@/components/theme-provider";
-
 export interface MapPoint {
   id: string;
   lat: number;
@@ -18,14 +16,26 @@ export interface MapPoint {
 }
 
 const MADRID: [number, number] = [-3.7038, 40.4168];
-const STYLES = {
-  dark: "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
-  light: "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",
+
+/** Inline OSM raster style — no remote style fetch, no API key. */
+const osmStyle = {
+  version: 8 as const,
+  sources: {
+    osm: {
+      type: "raster" as const,
+      tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
+      tileSize: 256,
+      attribution: "© OpenStreetMap contributors",
+      maxzoom: 19,
+    },
+  },
+  layers: [{ id: "osm", type: "raster" as const, source: "osm" }],
 };
 
 /**
- * Interactive map (MapLibre + CARTO free basemap, no API key).
- * Basemap follows the app theme; renders one tappable pin per point.
+ * Interactive map (MapLibre + OSM raster basemap, no API key).
+ * Dark mode is applied via a CSS filter on the canvas (see globals.css).
+ * Renders one tappable pin per point.
  */
 export function MapView({
   points,
@@ -44,10 +54,7 @@ export function MapView({
   const map = useRef<MlMap | null>(null);
   const markers = useRef<Marker[]>([]);
   const selectRef = useRef(onSelect);
-  const styleLoaded = useRef(false);
-  const appliedStyle = useRef<string | null>(null);
   const ready = useRef<Promise<void> | null>(null);
-  const { theme } = useTheme();
 
   useEffect(() => {
     selectRef.current = onSelect;
@@ -56,11 +63,9 @@ export function MapView({
   useEffect(() => {
     if (!container.current || map.current) return;
     const first = points[0];
-    const url = theme === "dark" ? STYLES.dark : STYLES.light;
-    appliedStyle.current = url;
     const instance = new MlMap({
       container: container.current,
-      style: url,
+      style: osmStyle as never,
       center: first ? [first.lng, first.lat] : MADRID,
       zoom,
       interactive,
@@ -68,8 +73,8 @@ export function MapView({
     });
     map.current = instance;
 
-    // Resolves once the map is usable — guarding against the load event
-    // having already fired before later effects subscribe.
+    // Resolves once the map is usable — safety timeout in case the
+    // load event is delayed.
     ready.current = new Promise<void>((resolve) => {
       let settled = false;
       const settle = () => {
@@ -88,28 +93,9 @@ export function MapView({
       instance.remove();
       map.current = null;
       ready.current = null;
-      styleLoaded.current = false;
-      appliedStyle.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  // Swap basemap when the app theme changes (pins are DOM, they survive).
-  // Guarded: setStyle before the initial load completes would cancel the
-  // first "load" event and markers would never render.
-  useEffect(() => {
-    const m = map.current;
-    if (!m) return;
-    const url = theme === "dark" ? STYLES.dark : STYLES.light;
-    const apply = () => {
-      styleLoaded.current = true;
-      if (appliedStyle.current === url) return;
-      appliedStyle.current = url;
-      m.setStyle(url);
-    };
-    if (styleLoaded.current || m.isStyleLoaded()) apply();
-    else m.once("load", apply);
-  }, [theme]);
 
   useEffect(() => {
     const m = map.current;

@@ -279,16 +279,14 @@ export function CalendarView({ events, demo }: { events: EventRow[]; demo: boole
           </div>
         </div>
 
-        <AnimatePresence mode="wait" initial={false}>
-          {view === "map" && selectedDayEvents.length > 0 ? (
-            <motion.div
-              key="day-map"
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -12 }}
-              transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-              className="min-h-[60dvh] flex-1"
-            >
+        {view === "map" && selectedDayEvents.length > 0 ? (
+          <motion.div
+            key="day-map"
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+            className="min-h-[60dvh] flex-1"
+          >
               <MapView
                 points={selectedDayEvents
                   .filter((e) => e.latitude != null && e.longitude != null)
@@ -309,59 +307,58 @@ export function CalendarView({ events, demo }: { events: EventRow[]; demo: boole
               <p className="mono-label pt-3 pb-6 text-center text-muted-foreground">
                 Tap a pin to open the event
               </p>
-            </motion.div>
-          ) : (
-            /* Swipe horizontally to change days; vertical scroll stays native. */
-            <motion.div
-              key={`list-${selectedKey}`}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.18 }}
-              drag="x"
-              dragDirectionLock
-              dragConstraints={{ left: 0, right: 0 }}
-              dragElastic={0.12}
-              onDragEnd={(_, info) => {
-                if (info.offset.x < -70) step(1);
-                else if (info.offset.x > 70) step(-1);
-              }}
-            >
-              <AnimatePresence mode="popLayout" custom={direction} initial={false}>
-                {selectedDayEvents.length > 0 ? (
-                  <motion.div
-                    key="list"
-                    custom={direction}
-                    variants={{
-                      enter: (dir: number) => ({ x: dir >= 0 ? 44 : -44, opacity: 0 }),
-                      center: { x: 0, opacity: 1 },
-                      exit: (dir: number) => ({ x: dir >= 0 ? -44 : 44, opacity: 0 }),
-                    }}
-                    initial="enter"
-                    animate="center"
-                    exit="exit"
-                    transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
-                    className="grid gap-3 pb-10 sm:grid-cols-2"
-                  >
-                    {selectedDayEvents.map((event, i) => (
-                      <EventCard
-                        key={event.id}
-                        event={event}
-                        gender={filters.gender}
-                        index={i}
-                        onOpen={() => setOpenEvent(event)}
-                      />
-                    ))}
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    key="empty"
-                    initial={{ opacity: 0, y: 12 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-                    className="hairline flex flex-col items-center gap-3 rounded-xl bg-card/50 px-6 py-16 text-center"
-                  >
+          </motion.div>
+        ) : (
+          /* Swipe horizontally to change days; vertical scroll stays native. */
+          <motion.div
+            key={`list-${selectedKey}`}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.18 }}
+            drag="x"
+            dragDirectionLock
+            dragConstraints={{ left: 0, right: 0 }}
+            dragElastic={0.12}
+            onDragEnd={(_, info) => {
+              if (info.offset.x < -70) step(1);
+              else if (info.offset.x > 70) step(-1);
+            }}
+          >
+            <AnimatePresence mode="popLayout" custom={direction} initial={false}>
+              {selectedDayEvents.length > 0 ? (
+                <motion.div
+                  key="list"
+                  custom={direction}
+                  variants={{
+                    enter: (dir: number) => ({ x: dir >= 0 ? 44 : -44, opacity: 0 }),
+                    center: { x: 0, opacity: 1 },
+                    exit: (dir: number) => ({ x: dir >= 0 ? -44 : 44, opacity: 0 }),
+                  }}
+                  initial="enter"
+                  animate="center"
+                  exit="exit"
+                  transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+                  className="grid gap-3 pb-10 sm:grid-cols-2"
+                >
+                  {selectedDayEvents.map((event, i) => (
+                    <EventCard
+                      key={event.id}
+                      event={event}
+                      gender={filters.gender}
+                      index={i}
+                      onOpen={() => setOpenEvent(event)}
+                    />
+                  ))}
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="empty"
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                  className="hairline flex flex-col items-center gap-3 rounded-xl bg-card/50 px-6 py-16 text-center"
+                >
                     <SparklesIcon className="size-7 text-muted-foreground/70" strokeWidth={1.25} />
                     <div>
                       <p className="font-normal">Nothing on this night</p>
@@ -383,10 +380,9 @@ export function CalendarView({ events, demo }: { events: EventRow[]; demo: boole
                     )}
                   </motion.div>
                 )}
-              </AnimatePresence>
-            </motion.div>
-          )}
-        </AnimatePresence>
+            </AnimatePresence>
+          </motion.div>
+        )}
       </main>
 
       <EventSheet

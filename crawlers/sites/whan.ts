@@ -61,7 +61,7 @@ interface WhanDetail {
   dressCode?: string | null;
   additionalInfo?: string | null;
   musicType?: string;
-  club?: { name?: string; locationLink?: string | null };
+  club?: { name?: string; locationLink?: string | null; mainImage?: string | null };
   generalTicketsEnabled?: Array<{
     name?: string;
     price?: string | number | null;
@@ -108,6 +108,9 @@ export const whan: SiteCrawler = {
         let description: string | undefined;
         let gmapsUrl: string | undefined;
         let venueName = clubInfo.name?.trim();
+        // The explore list often has mainImage: null even when the event page
+        // shows one — the detail's club.mainImage fills the gap.
+        let imageRef = mainImage ?? undefined;
         let url = `https://app.whan.es/event/${item.id}`;
         let genres = musicType ? [musicType] : [];
         try {
@@ -115,6 +118,7 @@ export const whan: SiteCrawler = {
           const detail = await fetchJson<WhanDetail>(`${DETAIL_API}/${item.id}?preview=1`);
           if (detail.slug) url = `https://app.whan.es/event/${detail.slug}`;
           if (detail.club?.name) venueName = detail.club.name.trim();
+          if (!imageRef && detail.club?.mainImage) imageRef = detail.club.mainImage;
           gmapsUrl = detail.club?.locationLink ?? undefined;
           const genreTag = detail.musicType || musicType;
           genres = genreTag ? [genreTag] : [];
@@ -167,8 +171,8 @@ export const whan: SiteCrawler = {
           startsAt,
           endsAt: endDateTime ? new Date(endDateTime).toISOString() : undefined,
           url,
-          imageUrl: mainImage
-            ? `https://app.whan.es/event/img/${item.id}?v=${encodeURIComponent(mainImage)}&w=480`
+          imageUrl: imageRef
+            ? `https://app.whan.es/event/img/${item.id}?v=${encodeURIComponent(imageRef)}&w=480`
             : undefined,
           venueName: venueName || undefined,
           gmapsUrl,
