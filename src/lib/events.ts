@@ -39,6 +39,8 @@ export const SOURCE_META: Record<string, { label: string; dot: string }> = {
   esnupm: { label: "ESN UPM", dot: "#ffcc14" },
   whan: { label: "Whan", dot: "#2ed24f" },
   fourvenues_erasmustouch: { label: "Erasmus Touch", dot: "#8a63f7" },
+  entryos: { label: "EntryOS", dot: "#f43f5e" },
+  ra: { label: "Resident Advisor", dot: "#f5f5f5" },
 };
 
 export function sourceMeta(source: string) {

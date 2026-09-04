@@ -44,6 +44,10 @@ export function EventCard({
             fill
             sizes="96px"
             loading={index < 2 ? "eager" : undefined}
+            // RA flyers sit behind Cloudflare bot protection, which rejects
+            // Next's server-side image optimization — load them straight
+            // from the browser instead (real browser UAs pass).
+            unoptimized={event.source === "ra"}
             className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.06]"
           />
         ) : (

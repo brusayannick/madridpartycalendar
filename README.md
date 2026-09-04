@@ -17,6 +17,8 @@ multiple sources — club nights, pubcrawls, pool parties — in one clean app.
 | ESN UPM | <https://esnupm.org/es/eventos> | EventUpp API (the Drupal site embeds eventupp.eu) |
 | Whan | <https://app.whan.es/explore> | Whan public explore API (paginated — replaces the site's infinite scroll) |
 | Erasmus Touch | <https://site.fourvenues.com/en/erasmustouch/events> | Fourvenues API with the site's public token (Madrid-filtered — the microsite also sells other cities) |
+| EntryOS | <https://app.entry-os.com/en-GB/events> | EntryOS public API (`api.entry-os.com/v1/events`, cursor-paginated) + per-event detail (Madrid-filtered — the platform also sells London/Barcelona nights) |
+| Resident Advisor | <https://ra.co/events/es/madrid> | RA public GraphQL (`ra.co/graphql`, area 41 = Madrid) with browser-origin headers — bypasses the DataDome page challenge; paginated by page |
 
 Each event stores: date, start/end time, early-bird & normal price (VIP/table
 tiers filtered out), ticket-sale start when announced, ticket URL, genres,

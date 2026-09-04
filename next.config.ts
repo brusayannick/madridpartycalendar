@@ -20,6 +20,10 @@ const nextConfig: NextConfig = {
       // Fourvenues (Erasmus Touch) event images.
       { protocol: "https", hostname: "fourvenues.com" },
       { protocol: "https", hostname: "d72sklgi05fbu.cloudfront.net" },
+      // EntryOS event/venue assets.
+      { protocol: "https", hostname: "assets.entry-os.com" },
+      // Resident Advisor flyers.
+      { protocol: "https", hostname: "images.ra.co" },
     ],
   },
 };

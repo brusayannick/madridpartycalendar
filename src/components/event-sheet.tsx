@@ -75,6 +75,10 @@ export function EventSheet({
                 sizes="(max-width: 768px) 100vw, 448px"
                 className="object-cover"
                 priority
+                // RA flyers sit behind Cloudflare bot protection, which rejects
+                // Next's server-side image optimization — load them straight
+                // from the browser instead (real browser UAs pass).
+                unoptimized={event.source === "ra"}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-popover via-transparent to-transparent" />
             </div>

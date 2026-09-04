@@ -13,6 +13,8 @@ import { nightlifeMadrid, pattFirstCircle } from "./sites/patt";
 import { esnUpm } from "./sites/eventupp";
 import { whan } from "./sites/whan";
 import { fourvenuesErasmusTouch } from "./sites/fourvenues";
+import { entryos } from "./sites/entryos";
+import { raMadrid } from "./sites/ra";
 import { dedupeAcrossSources } from "./lib/dedupe";
 import { finalizeEvents } from "./lib/finalize";
 import { deleteEvents, prunePastEvents, upsertEvents } from "./lib/store";
@@ -45,6 +47,8 @@ const CRAWLERS: SiteCrawler[] = [
   esnUpm,
   whan,
   fourvenuesErasmusTouch,
+  entryos,
+  raMadrid,
 ];
 
 function parseArgs(argv: string[]) {
