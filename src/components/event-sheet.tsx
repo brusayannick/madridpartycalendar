@@ -10,6 +10,7 @@ import {
   HourglassIcon,
   MapPinIcon,
   TicketIcon,
+  TrainFrontIcon,
 } from "lucide-react";
 
 import {
@@ -22,6 +23,7 @@ import {
 import {
   dayLabel,
   dateKey,
+  distanceFromSolLabel,
   effectivePrices,
   priceLabel,
   saleOpensLabel,
@@ -54,6 +56,7 @@ export function EventSheet({
     event != null &&
     ((gender === "female" && event.price_early_female != null) ||
       (gender === "male" && event.price_early_male != null));
+  const dist = event ? distanceFromSolLabel(event) : null;
 
   return (
     <Sheet open={Boolean(event)} onOpenChange={(open) => !open && onClose()}>
@@ -130,6 +133,15 @@ export function EventSheet({
                       Maps <ArrowUpRightIcon className="size-3.5" />
                     </a>
                   )}
+                </div>
+              )}
+              {dist && (
+                <div className="flex items-center gap-3 px-3.5 py-2.5 text-sm">
+                  <TrainFrontIcon className="size-4 shrink-0 text-muted-foreground" strokeWidth={1.5} />
+                  <span className="font-light tabular-nums">
+                    {dist}{" "}
+                    <span className="text-xs text-muted-foreground">(straight-line)</span>
+                  </span>
                 </div>
               )}
               <div className="flex items-center gap-3 px-3.5 py-2.5 text-sm">

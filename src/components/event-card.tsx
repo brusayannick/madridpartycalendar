@@ -4,7 +4,7 @@ import Image from "next/image";
 import { motion } from "motion/react";
 import { ClockIcon, MapPinIcon } from "lucide-react";
 
-import { priceLabel, sourceMeta, timeLabel, type EventRow, type Gender } from "@/lib/events";
+import { distanceFromSolLabel, priceLabel, sourceMeta, timeLabel, type EventRow, type Gender } from "@/lib/events";
 
 /** Agenda card for one event; taps open the detail sheet. tacto-style hairline card. */
 export function EventCard({
@@ -20,6 +20,7 @@ export function EventCard({
 }) {
   const source = sourceMeta(event.source);
   const free = priceLabel(event) === "Free";
+  const dist = distanceFromSolLabel(event);
 
   return (
     <motion.button
@@ -88,6 +89,7 @@ export function EventCard({
           <span className="mt-0.5 inline-flex min-w-0 items-center gap-1 truncate text-xs font-light text-muted-foreground">
             <MapPinIcon className="size-3 shrink-0" strokeWidth={1.5} />
             {event.venue_name}
+            {dist && <span className="shrink-0 tabular-nums"> · {dist}</span>}
           </span>
         )}
 

@@ -1,0 +1,45 @@
+name: Daily crawl
+
+# Runs all event crawlers and upserts into Supabase (same DB the Vercel app
+# reads). Crawlers need the service-role key, which lives ONLY in GitHub
+# Actions secrets — never in the repo or Vercel env vars.
+#
+# Required secrets (repo → Settings → Secrets and variables → Actions):
+#   NEXT_PUBLIC_SUPABASE_URL   e.g. https://YOUR-PROJECT.supabase.co
+#   SUPABASE_SERVICE_ROLE_KEY  Supabase → Project settings → API
+#
+# The web app picks up new rows on its own (ISR revalidates every 5 min).
+
+on:
+  schedule:
+    # Daily at 06:00 UTC (07:00/08:00 Madrid) — fresh events every morning.
+    - cron: "0 6 * * *"
+  # Manual runs from the Actions tab (e.g. after adding a new source).
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: crawl
+  cancel-in-progress: false
+
+jobs:
+  crawl:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Crawl all sources → Supabase
+        run: npm run crawl
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}

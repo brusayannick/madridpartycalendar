@@ -177,6 +177,35 @@ export function applyFilters(events: EventRow[], f: Filters): EventRow[] {
   });
 }
 
+/** Puerta del Sol — Madrid's central reference point (Sol station). */
+export const SOL_LAT = 40.4168;
+export const SOL_LNG = -3.7038;
+
+/** Great-circle (straight-line) distance in km between two WGS84 points. */
+export function haversineKm(aLat: number, aLng: number, bLat: number, bLng: number): number {
+  const rad = (d: number) => (d * Math.PI) / 180;
+  const dLat = rad(bLat - aLat);
+  const dLng = rad(bLng - aLng);
+  const h =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(rad(aLat)) * Math.cos(rad(bLat)) * Math.sin(dLng / 2) ** 2;
+  return 2 * 6371 * Math.asin(Math.sqrt(h));
+}
+
+/** Straight-line distance from the event venue to Sol station, in km. */
+export function distanceToSolKm(e: Pick<EventRow, "latitude" | "longitude">): number | null {
+  if (e.latitude == null || e.longitude == null) return null;
+  return haversineKm(e.latitude, e.longitude, SOL_LAT, SOL_LNG);
+}
+
+/** "350 m from Sol" / "1.2 km from Sol" — null when the venue has no coords. */
+export function distanceFromSolLabel(e: Pick<EventRow, "latitude" | "longitude">): string | null {
+  const km = distanceToSolKm(e);
+  if (km == null) return null;
+  if (km < 1) return `${Math.round((km * 1000) / 10) * 10} m from Sol`;
+  return `${km.toFixed(1)} km from Sol`;
+}
+
 /** Events grouped by Madrid date key, sorted. */
 export function groupByDay(events: EventRow[]): Map<string, EventRow[]> {
   const map = new Map<string, EventRow[]>();
