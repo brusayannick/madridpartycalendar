@@ -107,14 +107,39 @@ const VENUE_ALIASES: Array<{ match: RegExp; queries: string[] }> = [
   { match: /tu bar de copas|\(tbc\)/i, queries: ["Tu Bar de Copas, Calle de las Huertas 41, Madrid"] },
   { match: /^okume pub$/i, queries: ["Okume Pub, Calle de Coslada 14, Madrid"] },
   { match: /^casa suecia/i, queries: ["Casa Suecia, Calle del Marqués de Casa Riera 4, Madrid"] },
-  { match: /^saint club/i, queries: ["Saint Club Madrid"] },
+  { match: /^saint club/i, queries: ["Saint Club Madrid", "Calle de Velázquez 64, Madrid, Spain"] },
+  { match: /pedro zerolo/i, queries: ["Plaza de Pedro Zerolo, Madrid"] },
+  { match: /reina sof[ií]a/i, queries: ["Museo Reina Sofia, Madrid"] },
+  { match: /jardines del hip[oó]dromo/i, queries: ["Hipodromo de la Zarzuela, Madrid"] },
+  { match: /retiro/i, queries: ["Parque del Retiro, Madrid"] },
+  { match: /sol station|metro sol|estaci[oó]n de sol/i, queries: ["Estacion de Sol, Madrid"] },
+  { match: /safestay/i, queries: ["Safestay Madrid"] },
   { match: /^salvaje$/i, queries: ["Salvaje Club, Madrid"] },
+  { match: /^villa panthera/i, queries: ["Villa Panthera Madrid", "Avenida Padre Huidobro 32, Madrid, Spain"] },
   { match: /^villa panthera/i, queries: ["Panthera Club, Madrid"] },
 ];
 
 /** Looks like a street address rather than a venue name. */
 export function looksLikeAddress(text: string): boolean {
   return /\d/.test(text) && /(calle|c\/\.?|avenida|av\.?|plaza|paseo|p\.º|traves|280\d\d|madrid)/i.test(text);
+}
+
+/**
+ * Strip floor/unit noise providers append to street addresses — Nominatim
+ * chokes on it ("Calle Orense, 26 bajos Madrid" → no hit, without "bajos"
+ * it resolves). House numbers are never touched.
+ */
+export function cleanAddress(address: string): string {
+  return address
+    .replace(/\bba?jos?\b\.?/gi, " ") // "26 bajos" (ground floor)
+    .replace(/\blocal\s*\d*\b\.?/gi, " ") // "local 3" (shop unit)
+    .replace(/\b(portal|puerta|esc(\.|alera)?|planta|piso)\b[^,]*/gi, " ")
+    .replace(/(\d)\s*[ºª]/g, "$1") // "3º" → "3"
+    .replace(/\bespa(ñ|n)a\b/gi, "Spain") // Nominatim parses "Spain", not "España"
+    .replace(/,{2,}/g, ",")
+    .replace(/\s{2,}/g, " ")
+    .replace(/\s+,/g, ",")
+    .trim();
 }
 
 /**
@@ -146,13 +171,19 @@ function buildQueries(name: string, address?: string): string[] {
   const queries: string[] = [];
   const clean = normalizeVenueName(name);
   // If the "name" is actually an address, lead with it as the address.
-  const addr = address?.trim() || (looksLikeAddress(clean) ? clean : undefined);
+  const rawAddr = address?.trim() || (looksLikeAddress(clean) ? clean : undefined);
+  const addr = rawAddr ? cleanAddress(rawAddr) : undefined;
 
   if (addr && clean && !looksLikeAddress(clean)) {
     queries.push(`${addr}, ${clean}, Madrid, Spain`);
     queries.push(`${clean}, ${addr}, Madrid, Spain`);
   }
-  if (addr) queries.push(`${addr}${/madrid/i.test(addr) ? "" : ", Madrid"}, Spain`);
+  if (addr) {
+    // Strip a trailing country ("…, Spain, Spain" resolves nothing) then
+    // re-append it canonically.
+    const base = addr.replace(/,\s*spain\s*$/i, "");
+    queries.push(`${base}${/madrid/i.test(base) ? "" : ", Madrid"}, Spain`);
+  }
   if (clean && !looksLikeAddress(clean)) {
     queries.push(`${clean}, Madrid, Spain`);
     for (const { match, queries: aliasQueries } of VENUE_ALIASES) {
