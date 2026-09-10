@@ -130,7 +130,8 @@ export function CalendarView({ events, demo }: { events: EventRow[]; demo: boole
   const byDay = useMemo(() => groupByDay(filtered), [filtered]);
 
   const days = useMemo(() => {
-    const start = todayKey();
+    // Start one day back so yesterday's parties stay visible.
+    const start = addDaysKey(todayKey(), -1);
     const last = [...byDay.keys()].sort().pop();
     const end = last && last > start ? last : addDaysKey(start, 7);
     const list: string[] = [];
