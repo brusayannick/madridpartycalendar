@@ -38,8 +38,15 @@ jobs:
 
       - run: npm ci
 
-      - name: Crawl all sources → Supabase
-        run: npm run crawl
+      - name: Crawl all sources
+        run: |
+          if [ -n "$NEXT_PUBLIC_SUPABASE_URL" ] && [ -n "$SUPABASE_SERVICE_ROLE_KEY" ]; then
+            echo "Supabase secrets found; running full crawl + upsert."
+            npm run crawl
+          else
+            echo "::warning::Supabase secrets are missing; running dry crawl without DB writes."
+            npm run crawl -- --dry
+          fi
         env:
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
